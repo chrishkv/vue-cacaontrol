@@ -9,7 +9,7 @@
         </v-col>
 
         <v-col cols="12" sm="2">
-          <v-select :items="tipo_orden_select" filled label="Tipo de Orden" v-model="tipo_orden" item-value="value"></v-select>
+          <v-select :items="tipo_orden_select" filled label="Tipo de Orden" v-model="tipo_orden_id" item-value="value"></v-select>
         </v-col>
 
         <v-col cols="12" sm="2">
@@ -75,20 +75,10 @@
 </style>
 <script>
 import moment from 'moment'
+import axios from 'axios'
   export default {
-    methods: {
-      addOrden: function () {
-        this.ordenes.unshift({
-          persona_id: this.comentario,
-          tipo_orden: this.tipo_orden ? 'Venta' : 'Compra',
-          cantidad: this.cantidad,
-          tipo: this.tipo,
-          precio: this.precio,
-          total: this.total,
-          observacion: 'Algo escrito',
-          fecha: moment(String(new Date())).format('YYYY/MM/DD hh:mm:ss')
-        })
-      }
+    mounted() {
+      this.allRecords();
     },
 
     watch: {
@@ -98,22 +88,44 @@ import moment from 'moment'
       precio: function (newVar2) {
         this.total = this.cantidad * newVar2;
       }
-  },
+    },
+
+    methods: {
+      addOrden: function () {
+        this.ordenes.unshift({
+          persona_id: this.comentario,
+          tipo_orden_id: this.tipo_orden_id ? 'Venta' : 'Compra',
+          cantidad: this.cantidad + ' lb',
+          tipo: this.tipo,
+          precio: this.precio,
+          total: this.total,
+          observacion: 'Algo escrito',
+          fecha: moment(String(new Date())).format('MM/DD/YYYY hh:mm:ss')
+        })
+      },
+
+      allRecords: function() {
+        axios.post('./ajaxfile.php', {
+         request: 1
+         })
+         .then(response => (this.ordenes = response.data))
+         .catch(error => (console.log(error)));
+      }
+    },
 
     data () {
       return {
           persona_id:'',
-          tipo_orden:0,
+          tipo_orden_id:0,
           cantidad:'',
           tipo:'MOJADO',
           precio:'',
           total:'',
           comentario:'',
           search: '',
-          ordenes:[],
+          ordenes: [],
           tipo_orden_select: [{text:'Compra', value:0},{text:'Venta', value:1}],
           tipo_select: ['MOJADO','SECO'],
-          //reglas para los campos obligatorios
           nameRules: [
             v => !!v || 'Nombre es Obligatorio',
             v => v.length >= 10 || 'Nombre debe ser mayor a 10 Caracteres',
@@ -125,15 +137,13 @@ import moment from 'moment'
           /*emailRules: [
             v => /.+@.+/.test(v) || 'E-mail must be valid',
           ],*/
-
-          //cabecera para la tabla
           headers: [
             {
               text: 'Persona Nombre',
               align: 'start',
-              value: 'persona_id',
+              value: 'observacion',
             },
-            { text: 'Tipo Orden', value: 'tipo_orden' },
+            { text: 'Tipo Orden', value: 'tipo_orden_id' },
             { text: 'Cantidad', value: 'cantidad' },
             { text: 'Tipo', value: 'tipo' },
             { text: 'Precio', value: 'precio' },
@@ -142,7 +152,6 @@ import moment from 'moment'
             { text: 'Observacion', value: 'observacion' },
             { text: 'Acciones', value: 'actions', sortable: false }
           ],
-          //valores de prueba para local
           /*ordenes: [
             {
               persona_id: 'Frozen Yogurt',
@@ -247,6 +256,5 @@ import moment from 'moment'
           ],*/
         }
     },
-
   };
 </script>
