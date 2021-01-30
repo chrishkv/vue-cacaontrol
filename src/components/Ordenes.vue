@@ -5,7 +5,7 @@
     <v-container>
       <v-row>
         <v-col cols="12" sm="2">
-          <v-text-field v-model="comentario" filled label="Persona Nombre" clearable></v-text-field>
+          <v-text-field v-model="comentario" filled label="Nombre Cliente" :rules="nameRules" clearable required></v-text-field>
         </v-col>
 
         <v-col cols="12" sm="2">
@@ -13,15 +13,15 @@
         </v-col>
 
         <v-col cols="12" sm="2">
-          <v-text-field v-model="cantidad" filled type="number" label="Cantidad" clearable></v-text-field>
+          <v-text-field v-model="cantidad" filled type="number" label="Cantidad" :rules="numberRules" required></v-text-field>
         </v-col>
 
         <v-col cols="12" sm="2">
-          <v-select :items="tipo_select" filled label="Tipo de Orden" v-model="tipo"></v-select>
+          <v-select :items="tipo_select" filled label="Tipo" v-model="tipo"></v-select>
         </v-col>
 
         <v-col cols="12" sm="2">
-          <v-text-field v-model="precio" filled type="number" label="Precio" clearable></v-text-field>
+          <v-text-field v-model="precio" filled type="number" label="Precio" :rules="numberRules" required></v-text-field>
         </v-col>
 
         <v-col cols="12" sm="1">
@@ -48,7 +48,23 @@
         :headers="headers"
         :items="ordenes"
         :search="search"
-      ></v-data-table>
+      >
+      <template v-slot:item.actions="{ item }">
+        <v-icon
+          small
+          class="mr-2"
+          @click="editItem(item)"
+        >
+          mdi-pencil
+        </v-icon>
+        <v-icon
+          small
+          @click="deleteItem(item)"
+        >
+          mdi-delete
+        </v-icon>
+      </template>
+      </v-data-table>
     </v-card>
   </div>
 </template>
@@ -58,20 +74,20 @@
   }*/
 </style>
 <script>
+import moment from 'moment'
   export default {
     methods: {
       addOrden: function () {
-        this.ordenes.push({
+        this.ordenes.unshift({
           persona_id: this.comentario,
-          tipo_orden: this.tipo_orden,
+          tipo_orden: this.tipo_orden ? 'Venta' : 'Compra',
           cantidad: this.cantidad,
           tipo: this.tipo,
           precio: this.precio,
           total: this.total,
           observacion: 'Algo escrito',
-          fecha: new Date()
+          fecha: moment(String(new Date())).format('YYYY/MM/DD hh:mm:ss')
         })
-        //alert('Hello ' + this.tipo_orden + '!')
       }
     },
 
@@ -94,8 +110,23 @@
           total:'',
           comentario:'',
           search: '',
+          ordenes:[],
           tipo_orden_select: [{text:'Compra', value:0},{text:'Venta', value:1}],
-          tipo_select: ['SECO', 'MOJADO'],
+          tipo_select: ['MOJADO','SECO'],
+          //reglas para los campos obligatorios
+          nameRules: [
+            v => !!v || 'Nombre es Obligatorio',
+            v => v.length >= 10 || 'Nombre debe ser mayor a 10 Caracteres',
+          ],
+          numberRules: [
+            v => !!v || 'Valor es Obligatorio',
+            v => v > 0 || 'El valor debe ser mayor a 0',
+          ],
+          /*emailRules: [
+            v => /.+@.+/.test(v) || 'E-mail must be valid',
+          ],*/
+
+          //cabecera para la tabla
           headers: [
             {
               text: 'Persona Nombre',
@@ -109,8 +140,10 @@
             { text: 'Total', value: 'total' },
             { text: 'Fecha', value: 'fecha' },
             { text: 'Observacion', value: 'observacion' },
+            { text: 'Acciones', value: 'actions', sortable: false }
           ],
-          ordenes: [
+          //valores de prueba para local
+          /*ordenes: [
             {
               persona_id: 'Frozen Yogurt',
               tipo_orden: 159,
@@ -211,7 +244,7 @@
               observacion: 'Algo escrito',
               fecha: '12/28/2021'
             },
-          ],
+          ],*/
         }
     },
 
