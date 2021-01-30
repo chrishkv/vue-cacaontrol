@@ -5,7 +5,7 @@
     <v-container>
       <v-row>
         <v-col cols="12" sm="2">
-          <v-text-field v-model="comentario" filled label="Nombre Cliente" :rules="nameRules" clearable required></v-text-field>
+          <v-text-field v-model="observacion" filled label="Nombre Cliente" :rules="nameRules" clearable required></v-text-field>
         </v-col>
 
         <v-col cols="12" sm="2">
@@ -92,16 +92,36 @@ import axios from 'axios'
 
     methods: {
       addOrden: function () {
-        this.ordenes.unshift({
-          persona_id: this.comentario,
-          tipo_orden_id: this.tipo_orden_id ? 'Venta' : 'Compra',
-          cantidad: this.cantidad + ' lb',
-          tipo: this.tipo,
-          precio: this.precio,
-          total: this.total,
-          observacion: 'Algo escrito',
-          fecha: moment(String(new Date())).format('MM/DD/YYYY hh:mm:ss')
-        })
+        if(this.observacion != '' && this.cantidad != '' && this.precio != '' &&
+          this.cantidad > 0 && this.precio > 0 && this.observacion.length >= 10) {
+          axios.post('./ajaxfile.php', {
+            request: 2,
+            persona_id: 0,
+            tipo_orden_id: this.tipo_orden_id,
+            cantidad: this.cantidad,
+            tipo: this.tipo,
+            precio: this.precio,
+            total: this.total,
+            observacion: '',
+            fecha: moment(String(new Date())).format('MM/DD/YYYY hh:mm:ss')
+          })
+          .then((response) => (
+            console.log(response)
+            /*this.ordenes.unshift({
+              persona_id: this.observacion,
+              tipo_orden_id: this.tipo_orden_id ? 'Venta' : 'Compra',
+              cantidad: this.cantidad + ' lb',
+              tipo: this.tipo,
+              precio: this.precio,
+              total: this.total,
+              observacion: 'Algo escrito',
+              fecha: moment(String(new Date())).format('MM/DD/YYYY hh:mm:ss')
+            })*/
+          ))
+          .catch(error => (console.log(error)))
+        } else {
+          alert('Faltan datos.');
+        }
       },
 
       allRecords: function() {
@@ -109,8 +129,40 @@ import axios from 'axios'
          request: 1
          })
          .then(response => (this.ordenes = response.data))
-         .catch(error => (console.log(error)));
-      }
+         .catch(error => (//console.log(error)
+           this.ordenes = [
+             {
+               persona_id: error,
+               tipo_orden_id: 159,
+               cantidad: 6.0,
+               tipo: 24,
+               precio: 4.0,
+               total: '1',
+               observacion: 'Algo escrito',
+               fecha: '12/28/2021'
+             },
+             {
+               persona_id: 'Ice cream sandwich',
+               tipo_orden_id: 237,
+               cantidad: 9.0,
+               tipo: 37,
+               precio: 4.3,
+               total: '1',
+               observacion: 'Algo escrito',
+               fecha: '12/28/2021'
+             },
+             {
+               persona_id: 'Eclair',
+               tipo_orden_id: 262,
+               cantidad: 16.0,
+               tipo: 23,
+               precio: 6.0,
+               total: '7',
+               observacion: 'Algo escrito',
+               fecha: '12/28/2021'
+             }]
+       ));
+     },
     },
 
     data () {
@@ -121,7 +173,7 @@ import axios from 'axios'
           tipo:'MOJADO',
           precio:'',
           total:'',
-          comentario:'',
+          observacion:'',
           search: '',
           ordenes: [],
           tipo_orden_select: [{text:'Compra', value:0},{text:'Venta', value:1}],
@@ -152,108 +204,6 @@ import axios from 'axios'
             { text: 'Observacion', value: 'observacion' },
             { text: 'Acciones', value: 'actions', sortable: false }
           ],
-          /*ordenes: [
-            {
-              persona_id: 'Frozen Yogurt',
-              tipo_orden: 159,
-              cantidad: 6.0,
-              tipo: 24,
-              precio: 4.0,
-              total: '1',
-              observacion: 'Algo escrito',
-              fecha: '12/28/2021'
-            },
-            {
-              persona_id: 'Ice cream sandwich',
-              tipo_orden: 237,
-              cantidad: 9.0,
-              tipo: 37,
-              precio: 4.3,
-              total: '1',
-              observacion: 'Algo escrito',
-              fecha: '12/28/2021'
-            },
-            {
-              persona_id: 'Eclair',
-              tipo_orden: 262,
-              cantidad: 16.0,
-              tipo: 23,
-              precio: 6.0,
-              total: '7',
-              observacion: 'Algo escrito',
-              fecha: '12/28/2021'
-            },
-            {
-              persona_id: 'Cupcake',
-              tipo_orden: 305,
-              cantidad: 3.7,
-              tipo: 67,
-              precio: 4.3,
-              total: '8',
-              observacion: 'Algo escrito',
-              fecha: '12/28/2021'
-            },
-            {
-              persona_id: 'Gingerbread',
-              tipo_orden: 356,
-              cantidad: 16.0,
-              tipo: 49,
-              precio: 3.9,
-              total: '16',
-              observacion: 'Algo escrito',
-              fecha: '12/28/2021'
-            },
-            {
-              persona_id: 'Jelly bean',
-              tipo_orden: 375,
-              cantidad: 0.0,
-              tipo: 94,
-              precio: 0.0,
-              total: '0',
-              observacion: 'Algo escrito',
-              fecha: '12/28/2021'
-            },
-            {
-              persona_id: 'Lollipop',
-              tipo_orden: 392,
-              cantidad: 0.2,
-              tipo: 98,
-              precio: 0,
-              total: '2',
-              observacion: 'Algo escrito',
-              fecha: '12/28/2021'
-            },
-            {
-              persona_id: 'Honeycomb',
-              tipo_orden: 408,
-              cantidad: 3.2,
-              tipo: 87,
-              precio: 6.5,
-              total: '45',
-              observacion: 'Algo escrito',
-              fecha: '12/28/2021'
-            },
-            {
-              persona_id: 'Donut',
-              tipo_orden: 452,
-              cantidad: 25.0,
-              tipo: 51,
-              precio: 4.9,
-              total: '22',
-              observacion: 'Algo escrito',
-              fecha: '12/28/2021'
-            },
-            {
-              persona_id: 'KitKat',
-              tipo_orden: 518,
-              cantidad: 26.0,
-              tipo: 65,
-              precio: 7,
-              total: '6',
-              observacion: 'Algo escrito',
-              fecha: '12/28/2021'
-            },
-          ],*/
         }
     },
   };
