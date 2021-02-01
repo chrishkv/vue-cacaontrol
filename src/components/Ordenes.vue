@@ -102,21 +102,21 @@ import axios from 'axios'
             tipo: this.tipo,
             precio: this.precio,
             total: this.total,
-            observacion: '',
-            fecha: moment(String(new Date())).format('MM/DD/YYYY hh:mm:ss')
+            observacion: this.observacion,
+            fecha: moment(String(new Date())).format('YYYY/MM/DD hh:mm:ss')
           })
-          .then((response) => (
-            console.log(response)
-            /*this.ordenes.unshift({
+          .then((/*response*/) => (
+            //console.log(response)
+            this.ordenes.unshift({
               persona_id: this.observacion,
               tipo_orden_id: this.tipo_orden_id ? 'Venta' : 'Compra',
               cantidad: this.cantidad + ' lb',
               tipo: this.tipo,
               precio: this.precio,
               total: this.total,
-              observacion: 'Algo escrito',
-              fecha: moment(String(new Date())).format('MM/DD/YYYY hh:mm:ss')
-            })*/
+              observacion: this.observacion,
+              fecha: moment(String(new Date())).format('YYYY/MM/DD hh:mm:ss')
+            })
           ))
           .catch(error => (console.log(error)))
         } else {
@@ -133,7 +133,7 @@ import axios from 'axios'
            this.ordenes = [
              {
                persona_id: error,
-               tipo_orden_id: 159,
+               tipo_orden_id: 0,
                cantidad: 6.0,
                tipo: 24,
                precio: 4.0,
@@ -143,7 +143,7 @@ import axios from 'axios'
              },
              {
                persona_id: 'Ice cream sandwich',
-               tipo_orden_id: 237,
+               tipo_orden_id: 1,
                cantidad: 9.0,
                tipo: 37,
                precio: 4.3,
@@ -153,7 +153,7 @@ import axios from 'axios'
              },
              {
                persona_id: 'Eclair',
-               tipo_orden_id: 262,
+               tipo_orden_id: 0,
                cantidad: 16.0,
                tipo: 23,
                precio: 6.0,
