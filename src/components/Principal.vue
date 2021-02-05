@@ -4,6 +4,7 @@
     color="cyan"
     dark
     slider-color="yellow"
+    v-model="active_tab"
     >
     <v-tab ripple>
       Ordenes
@@ -27,7 +28,7 @@
     </v-tab-item>
     <v-tab-item>
       <v-card flat>
-        <v-card-text>Mostrando Personas</v-card-text>
+        <Personas/>
       </v-card>
     </v-tab-item>
     <v-tab-item>
@@ -41,16 +42,18 @@
 
 <script>
 import Ordenes from './Ordenes.vue';
+import Personas from './Personas.vue';
 
 export default {
   name: 'Principal',
 
   components: {
     Ordenes,
+    Personas,
   },
 
   data: () => ({
-    //
+    active_tab: 0,
   }),
 };
 </script>

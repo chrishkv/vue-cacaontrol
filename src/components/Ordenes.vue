@@ -78,7 +78,7 @@ import moment from 'moment'
 import axios from 'axios'
   export default {
     mounted() {
-      this.allRecords();
+      this.getOrdenes();
     },
 
     watch: {
@@ -95,7 +95,7 @@ import axios from 'axios'
         if(this.observacion != '' && this.cantidad != '' && this.precio != '' &&
           this.cantidad > 0 && this.precio > 0 && this.observacion.length >= 10) {
           axios.post('./ajaxfile.php', {
-            request: 2,
+            request: 'insertar_orden',
             persona_id: 0,
             tipo_orden_id: this.tipo_orden_id,
             cantidad: this.cantidad,
@@ -124,15 +124,15 @@ import axios from 'axios'
         }
       },
 
-      allRecords: function() {
+      getOrdenes: function() {
         axios.post('./ajaxfile.php', {
-         request: 1
+          request: 'consulta_orden',
          })
          .then(response => (this.ordenes = response.data))
-         .catch(error => (//console.log(error)
+         .catch( (/*error*/) => (//console.log(error)
            this.ordenes = [
              {
-               persona_id: error,
+               persona_id: 'Helado',
                tipo_orden_id: 0,
                cantidad: 6.0,
                tipo: 24,
@@ -186,9 +186,6 @@ import axios from 'axios'
             v => !!v || 'Valor es Obligatorio',
             v => v > 0 || 'El valor debe ser mayor a 0',
           ],
-          /*emailRules: [
-            v => /.+@.+/.test(v) || 'E-mail must be valid',
-          ],*/
           headers: [
             {
               text: 'Persona Nombre',
