@@ -62,6 +62,7 @@
 </template>
 <script>
 import axios from 'axios'
+import EventBus from '../bus'
   export default {
     mounted() {
       this.getPersonas();
@@ -77,14 +78,14 @@ import axios from 'axios'
             mail: this.mail,
             direccion: this.direccion
           })
-          .then((/*response*/) => (
-            //console.log(response)
+          .then((response) => (            
             this.personas.unshift({
               nombre: this.nombre,
               cedula: this.cedula,
               mail: this.mail,
               direccion: this.direccion
-            })
+            }),
+            EventBus.$emit('add-persona', [this.nombre, response.data])
           ))
           .catch(error => (console.log(error)))
         } else {
