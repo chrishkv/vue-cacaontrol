@@ -5,7 +5,16 @@
     <v-container>
       <v-row>
         <v-col cols="12" sm="2">
-          <v-text-field v-model="observacion" filled label="Nombre Cliente" :rules="nameRules" clearable required></v-text-field>
+          <v-autocomplete
+            label="Nombre y Apellido"
+            clearable
+            dense
+            filled
+            v-model="persona_id"
+            item-value="id"
+            item-text="nombre"
+            :items="personas"
+          ></v-autocomplete>
         </v-col>
 
         <v-col cols="12" sm="2">
@@ -76,27 +85,39 @@
 <script>
 import moment from 'moment'
 import axios from 'axios'
+import EventBus from '../bus'
+
   export default {
+    created: function() {
+        EventBus.$on('add-persona', (item) => {
+            this.personas.unshift({id:item[1], nombre:item[0]})
+        })
+    },
+
     mounted() {
       this.getOrdenes();
+      this.getPersonas();
     },
 
     watch: {
       cantidad: function (newVar1) {
         this.total = newVar1 * this.precio;
+        this.total = parseFloat(this.total).toFixed(2);
       },
       precio: function (newVar2) {
         this.total = this.cantidad * newVar2;
+        this.total = parseFloat(this.total).toFixed(2);
       }
     },
 
     methods: {
       addOrden: function () {
-        if(this.observacion != '' && this.cantidad != '' && this.precio != '' &&
-          this.cantidad > 0 && this.precio > 0 && this.observacion.length >= 10) {
+        console.log(this.persona_id);
+        if(this.persona_id != '' && this.cantidad != '' && this.precio != '' &&
+          this.cantidad > 0 && this.precio > 0) {
           axios.post('./ajaxfile.php', {
             request: 'insertar_orden',
-            persona_id: 0,
+            persona_id: this.persona_id,
             tipo_orden_id: this.tipo_orden_id,
             cantidad: this.cantidad,
             tipo: this.tipo,
@@ -107,8 +128,9 @@ import axios from 'axios'
           })
           .then((/*response*/) => (
             //console.log(response)
+            console.log(this.personas.find((item)=>{return item.id == this.persona_id}).nombre),
             this.ordenes.unshift({
-              persona_id: this.observacion,
+              persona_id: this.personas.find((item)=>{return item.id == this.persona_id}).nombre,
               tipo_orden_id: this.tipo_orden_id ? 'Venta' : 'Compra',
               cantidad: this.cantidad + ' lb',
               tipo: this.tipo,
@@ -163,6 +185,21 @@ import axios from 'axios'
              }]
        ));
      },
+
+     getPersonas: function() {
+       axios.post('./ajaxfile.php', {
+         request: 'consulta_personas_orden',
+        })
+        .then(response => (this.personas = response.data))
+        .catch( (error) => (
+          console.log(error),
+          this.personas =[
+            {id:0, nombre:'primero'},
+            {id:1, nombre:'segundo'},
+            {id:2, nombre:'tercero'}
+          ]
+      ));
+    },
     },
 
     data () {
@@ -176,12 +213,9 @@ import axios from 'axios'
           observacion:'',
           search: '',
           ordenes: [],
+          personas: [],
           tipo_orden_select: [{text:'Compra', value:0},{text:'Venta', value:1}],
           tipo_select: ['MOJADO','SECO'],
-          nameRules: [
-            v => !!v || 'Nombre es Obligatorio',
-            v => v.length >= 10 || 'Nombre debe ser mayor a 10 Caracteres',
-          ],
           numberRules: [
             v => !!v || 'Valor es Obligatorio',
             v => v > 0 || 'El valor debe ser mayor a 0',
@@ -190,7 +224,7 @@ import axios from 'axios'
             {
               text: 'Persona Nombre',
               align: 'start',
-              value: 'observacion',
+              value: 'persona_id',
             },
             { text: 'Tipo Orden', value: 'tipo_orden_id' },
             { text: 'Cantidad', value: 'cantidad' },
