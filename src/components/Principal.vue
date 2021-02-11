@@ -53,7 +53,7 @@ export default {
   },
 
   data: () => ({
-    active_tab: 0,
+    active_tab: 2,
   }),
 };
 </script>
