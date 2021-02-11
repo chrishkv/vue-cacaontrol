@@ -45,13 +45,13 @@
         <v-icon
           small
           class="mr-2"
-          @click="editItem(item)"
+          @click="editPersona(item)"
         >
           mdi-pencil
         </v-icon>
         <v-icon
           small
-          @click="deleteItem(item)"
+          @click="deletePersona(item)"
         >
           mdi-delete
         </v-icon>
@@ -78,7 +78,7 @@ import EventBus from '../bus'
             mail: this.mail,
             direccion: this.direccion
           })
-          .then((response) => (            
+          .then((response) => (
             this.personas.unshift({
               nombre: this.nombre,
               cedula: this.cedula,
@@ -101,24 +101,49 @@ import EventBus from '../bus'
          .catch(() => (//console.log(error)
            this.personas = [
              {
+               id: 0,
                nombre: 'Primero',
                cedula: 12354,
                mail: 'inventado',
                direccion: 'otra mas',
              },
              {
+               id: 1,
                nombre: 'Segundo',
                cedula: 12354,
                mail: 'mucho otro',
                direccion: 'otra menos',
              },
              {
+               id: 2,
                nombre: 'Tercero',
                cedula: 12354,
                mail: 'inventado otro',
                direccion: 'mas otra ',
              }]
        ));
+     },
+
+     editPersona(persona){
+       console.log(persona);
+     },
+
+     deletePersona(persona){
+       console.log(persona);
+       axios.post('./ajaxfile.php', {
+         request: 'eliminar_persona',
+         persona_id: persona.persona_id,
+       })
+       .then((response) => (
+         this.personas.unshift({
+           nombre: this.nombre,
+           cedula: this.cedula,
+           mail: this.mail,
+           direccion: this.direccion
+         }),
+         EventBus.$emit('remove-persona', [this.nombre, response.data])
+       ))
+       .catch(error => (console.log(error)))
      },
     },
 

@@ -26,7 +26,7 @@
         </v-col>
 
         <v-col cols="12" sm="2">
-          <v-select :items="tipo_select" filled label="Tipo" v-model="tipo"></v-select>
+          <v-select :items="tipo_select" filled label="Tipo" v-model="tipo" item-value="value"></v-select>
         </v-col>
 
         <v-col cols="12" sm="2">
@@ -39,6 +39,11 @@
 
         <v-col cols="12" sm="1">
           <v-btn v-on:click="addOrden" color="primary" dark large>Guardar</v-btn>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col cols="12" sm="11">
+          <v-text-field v-model="observacion" filled label="Observacion"></v-text-field>
         </v-col>
       </v-row>
     </v-container>
@@ -133,7 +138,7 @@ import EventBus from '../bus'
               persona_id: this.personas.find((item)=>{return item.id == this.persona_id}).nombre,
               tipo_orden_id: this.tipo_orden_id ? 'Venta' : 'Compra',
               cantidad: this.cantidad + ' lb',
-              tipo: this.tipo,
+              tipo: this.tipo_select[this.tipo].text,
               precio: this.precio,
               total: this.total,
               observacion: this.observacion,
@@ -157,7 +162,7 @@ import EventBus from '../bus'
                persona_id: 'Helado',
                tipo_orden_id: 0,
                cantidad: 6.0,
-               tipo: 24,
+               tipo: 0,
                precio: 4.0,
                total: '1',
                observacion: 'Algo escrito',
@@ -167,7 +172,7 @@ import EventBus from '../bus'
                persona_id: 'Ice cream sandwich',
                tipo_orden_id: 1,
                cantidad: 9.0,
-               tipo: 37,
+               tipo: 1,
                precio: 4.3,
                total: '1',
                observacion: 'Algo escrito',
@@ -177,7 +182,7 @@ import EventBus from '../bus'
                persona_id: 'Eclair',
                tipo_orden_id: 0,
                cantidad: 16.0,
-               tipo: 23,
+               tipo: 2,
                precio: 6.0,
                total: '7',
                observacion: 'Algo escrito',
@@ -207,7 +212,7 @@ import EventBus from '../bus'
           persona_id:'',
           tipo_orden_id:0,
           cantidad:'',
-          tipo:'MOJADO',
+          tipo:0,
           precio:'',
           total:'',
           observacion:'',
@@ -215,7 +220,13 @@ import EventBus from '../bus'
           ordenes: [],
           personas: [],
           tipo_orden_select: [{text:'Compra', value:0},{text:'Venta', value:1}],
-          tipo_select: ['MOJADO','SECO'],
+          tipo_select: [
+            {text:'Latas CCN51', value:0},
+            {text:'Seco CCN51 lbs', value:1},
+            {text:'Latas Nacional', value:2},
+            {text:'Seco Nacional', value:3},
+            {text:'Latas Monilla', value:4},
+          ],
           numberRules: [
             v => !!v || 'Valor es Obligatorio',
             v => v > 0 || 'El valor debe ser mayor a 0',
