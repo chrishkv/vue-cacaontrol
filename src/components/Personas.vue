@@ -71,23 +71,52 @@ import EventBus from '../bus'
     methods: {
       addPersona: function () {
         if(this.nombre != '' && this.cedula != '') {
-          axios.post('./ajaxfile.php', {
-            request: 'insertar_persona',
-            nombre: this.nombre,
-            cedula: this.cedula,
-            mail: this.mail,
-            direccion: this.direccion
-          })
-          .then((response) => (
-            this.personas.unshift({
+          console.log(this.persona_id);
+          //indica que va a editar
+          if (this.persona_id) {
+            axios.post('./ajaxfile.php', {
+              request: 'editar_persona',
+              persona_id: this.persona_id,
               nombre: this.nombre,
               cedula: this.cedula,
               mail: this.mail,
               direccion: this.direccion
-            }),
-            EventBus.$emit('add-persona', [this.nombre, response.data])
-          ))
-          .catch(error => (console.log(error)))
+            })
+            .then((/*response*/) => (
+              //console.log(response),
+              //luego de editar a la persona vuelve a rehacer la lista desde la BD
+              this.getPersonas(),
+              //Se borra la informacion de las variables
+              this.persona_id = '',
+              this.nombre = '',
+              this.cedula = '',
+              this.mail = '',
+              this.direccion = ''
+            ))
+            .catch(error => (console.log(error)))
+          } else {
+            //indica que va a ingresar una persona nueva
+            axios.post('./ajaxfile.php', {
+              request: 'insertar_persona',
+              nombre: this.nombre,
+              cedula: this.cedula,
+              mail: this.mail,
+              direccion: this.direccion
+            })
+            .then((response) => (
+              console.log(this.persona_id),
+              //Agrega a la persona en la lista en la primera posicion
+              this.personas.unshift({
+                id: response.data,
+                nombre: this.nombre,
+                cedula: this.cedula,
+                mail: this.mail,
+                direccion: this.direccion
+              }),
+              EventBus.$emit('add-persona', [this.nombre, response.data])
+            ))
+            .catch(error => (console.log(error)))
+          }
         } else {
           alert('Faltan datos.');
         }
@@ -124,8 +153,12 @@ import EventBus from '../bus'
        ));
      },
 
-     editPersona(persona){
-       console.log(persona);
+     editPersona(persona) {
+       this.persona_id = persona.id,
+       this.nombre = persona.nombre,
+       this.cedula = persona.cedula,
+       this.mail = persona.mail,
+       this.direccion = persona.direccion
      },
 
      deletePersona(persona){
