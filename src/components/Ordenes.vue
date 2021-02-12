@@ -73,7 +73,7 @@
         </v-icon>
         <v-icon
           small
-          @click="deleteItem(item)"
+          @click="deleteOrden(item)"
         >
           mdi-delete
         </v-icon>
@@ -117,7 +117,6 @@ import EventBus from '../bus'
 
     methods: {
       addOrden: function () {
-        console.log(this.persona_id);
         if(this.persona_id != '' && this.cantidad != '' && this.precio != '' &&
           this.cantidad > 0 && this.precio > 0) {
           axios.post('./ajaxfile.php', {
@@ -205,11 +204,27 @@ import EventBus from '../bus'
           ]
       ));
     },
+
+    deleteOrden: function (orden) {
+      console.log(orden)
+      axios.post('./ajaxfile.php', {
+        request: 'eliminar_orden',
+        orden_id: orden.id
+       })
+       .then(response => (
+         console.log(response),
+         this.getOrdenes()
+       ))
+       .catch( (error) => (
+         console.log(error)
+     ));
+    },
     },
 
     data () {
       return {
           persona_id:'',
+          orden_id:'',
           tipo_orden_id:0,
           cantidad:'',
           tipo:0,
