@@ -1,7 +1,6 @@
 .DS_Store
 node_modules
 /dist
-ajaxfile.php
 config.php
 
 # local env files

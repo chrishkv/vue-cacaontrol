@@ -13,15 +13,27 @@
         </v-col>
 
         <v-col cols="12" sm="2">
+          <v-text-field v-model="telefono" filled label="Telefono" :rules="telefonoRules"></v-text-field>
+        </v-col>
+
+        <v-col cols="12" sm="2">
           <v-text-field v-model="mail" filled label="E-Mail" :rules="emailRules"></v-text-field>
         </v-col>
 
-        <v-col cols="12" sm="4">
-          <v-text-field v-model="direccion" filled label="Direccion"></v-text-field>
+        <v-col cols="12" sm="1">
+          <v-text-field v-model="hectarea" filled label="Hectarea" :rules="hectareaRules" required></v-text-field>
         </v-col>
 
         <v-col cols="12" sm="1">
           <v-btn v-on:click="addPersona" color="primary" dark large>Guardar</v-btn>
+        </v-col>
+
+        <v-col cols="12" sm="5">
+          <v-text-field v-model="direccion" filled label="Direccion"></v-text-field>
+        </v-col>
+
+        <v-col cols="12" sm="5">
+          <v-text-field v-model="parcela" filled label="Direccion de Parcela"></v-text-field>
         </v-col>
       </v-row>
     </v-container>
@@ -31,7 +43,7 @@
         <v-text-field
           v-model="search"
           append-icon="mdi-magnify"
-          label="Search"
+          label="Buscar"
           single-line
           hide-details
         ></v-text-field>
@@ -71,7 +83,6 @@ import EventBus from '../bus'
     methods: {
       addPersona: function () {
         if(this.nombre != '' && this.cedula != '') {
-          console.log(this.persona_id);
           //indica que va a editar
           if (this.persona_id) {
             axios.post('./ajaxfile.php', {
@@ -79,46 +90,67 @@ import EventBus from '../bus'
               persona_id: this.persona_id,
               nombre: this.nombre,
               cedula: this.cedula,
+              telefono: this.telefono,
               mail: this.mail,
-              direccion: this.direccion
+              hectarea: this.hectarea,
+              direccion: this.direccion,
+              parcela: this.parcela
             })
             .then((/*response*/) => (
               //console.log(response),
-              //luego de editar a la persona vuelve a rehacer la lista desde la BD
-              this.getPersonas(),
               //Se borra la informacion de las variables
               this.persona_id = '',
               this.nombre = '',
               this.cedula = '',
+              this.telefono = '',
               this.mail = '',
-              this.direccion = ''
+              this.hectarea = '',
+              this.direccion = '',
+              this.parcela = '',
+              //luego de editar a la persona vuelve a rehacer la lista desde la BD
+              this.getPersonas()
             ))
-            .catch(error => (console.log(error)))
+            .catch((error) => (console.log(error)))
           } else {
             //indica que va a ingresar una persona nueva
             axios.post('./ajaxfile.php', {
               request: 'insertar_persona',
               nombre: this.nombre,
               cedula: this.cedula,
+              telefono: this.telefono,
               mail: this.mail,
-              direccion: this.direccion
+              hectarea: this.hectarea,
+              direccion: this.direccion,
+              parcela: this.parcela
             })
             .then((response) => (
-              console.log(this.persona_id),
-              //Agrega a la persona en la lista en la primera posicion
+              //Agrega a la persona en la lista en la primera posición
+              console.log(response),
               this.personas.unshift({
                 id: response.data,
                 nombre: this.nombre,
                 cedula: this.cedula,
+                telefono: this.telefono,
                 mail: this.mail,
-                direccion: this.direccion
+                hectarea: this.hectarea,
+                direccion: this.direccion,
+                parcela: this.parcela
               }),
-              EventBus.$emit('add-persona', [this.nombre, response.data])
+              EventBus.$emit('add-persona', [this.nombre, response.data]),
+              //Se borra la informacion de las variables
+              this.persona_id = '',
+              this.nombre = '',
+              this.cedula = '',
+              this.telefono = '',
+              this.mail = '',
+              this.hectarea = '',
+              this.direccion = '',
+              this.parcela = ''
             ))
-            .catch(error => (console.log(error)))
+            .catch((error) => (console.log(error)))
           }
         } else {
-          alert('Faltan datos.');
+          alert('Faltan datos revise los campos en rojo.');
         }
       },
 
@@ -127,29 +159,7 @@ import EventBus from '../bus'
           request: 'consulta_personas',
          })
          .then(response => (this.personas = response.data))
-         .catch(() => (//console.log(error)
-           this.personas = [
-             {
-               id: 0,
-               nombre: 'Primero',
-               cedula: 12354,
-               mail: 'inventado',
-               direccion: 'otra mas',
-             },
-             {
-               id: 1,
-               nombre: 'Segundo',
-               cedula: 12354,
-               mail: 'mucho otro',
-               direccion: 'otra menos',
-             },
-             {
-               id: 2,
-               nombre: 'Tercero',
-               cedula: 12354,
-               mail: 'inventado otro',
-               direccion: 'mas otra ',
-             }]
+         .catch((error) => (console.log(error)
        ));
      },
 
@@ -157,13 +167,16 @@ import EventBus from '../bus'
        this.persona_id = persona.id,
        this.nombre = persona.nombre,
        this.cedula = persona.cedula,
+       this.telefono = persona.telefono,
        this.mail = persona.mail,
-       this.direccion = persona.direccion
+       this.hectarea = persona.hectarea,
+       this.direccion = persona.direccion,
+       this.parcela = persona.parcela
      },
 
-     deletePersona(persona){
-       console.log(persona);
-       axios.post('./ajaxfile.php', {
+     deletePersona(/*persona*/) {
+       alert('funcion aun no disponible')
+       /*axios.post('./ajaxfile.php', {
          request: 'eliminar_persona',
          persona_id: persona.persona_id,
        })
@@ -171,12 +184,13 @@ import EventBus from '../bus'
          this.personas.unshift({
            nombre: this.nombre,
            cedula: this.cedula,
+           telefono: this.telefono,
            mail: this.mail,
            direccion: this.direccion
          }),
          EventBus.$emit('remove-persona', [this.nombre, response.data])
        ))
-       .catch(error => (console.log(error)))
+       .catch(error => (console.log(error)))*/
      },
     },
 
@@ -185,8 +199,11 @@ import EventBus from '../bus'
           persona_id:'',
           nombre:'',
           cedula:'',
+          telefono:'',
           mail:'',
+          hectarea:'',
           direccion:'',
+          parcela:'',
           search: '',
           personas: [],
           nameRules: [
@@ -200,6 +217,12 @@ import EventBus from '../bus'
           emailRules: [
             v => /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(v) || 'E-mail debe ser valido',
           ],
+          telefonoRules: [
+            v => v.length > 8 || 'El telefono debe tener mas de 8 digitos',
+          ],
+          hectareaRules: [
+            v => v > 0 || 'El valor debe ser mayor a 0',
+          ],
           headers: [
             {
               text: 'Nombre y Apellido',
@@ -207,8 +230,11 @@ import EventBus from '../bus'
               value: 'nombre',
             },
             { text: 'Cedula', value: 'cedula' },
+            { text: 'Telefono', value: 'telefono' },
             { text: 'E-mail', value: 'mail' },
+            { text: 'Hectarea', value: 'hectarea' },
             { text: 'Direccion', value: 'direccion' },
+            { text: 'Parcela', value: 'parcela' },
             { text: 'Acciones', value: 'actions', sortable: false }
           ],
         }
