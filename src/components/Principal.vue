@@ -33,7 +33,7 @@
     </v-tab-item>
     <v-tab-item>
       <v-card flat>
-        <v-card-text>Mostrando Cuentas</v-card-text>
+        <Cuentas/>
       </v-card>
     </v-tab-item>
     </v-tabs>
@@ -43,6 +43,7 @@
 <script>
 import Ordenes from './Ordenes.vue';
 import Personas from './Personas.vue';
+import Cuentas from './Cuentas.vue';
 
 export default {
   name: 'Principal',
@@ -50,10 +51,11 @@ export default {
   components: {
     Ordenes,
     Personas,
+    Cuentas
   },
 
   data: () => ({
-    active_tab: 0,
+    active_tab: 3,
   }),
 };
 </script>

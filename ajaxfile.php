@@ -41,7 +41,7 @@ if($request == 'insertar_orden'){
   $observacion = $data->observacion?:null;
   $fecha = $data->fecha;
 
-  $sql->bindValue(1,$persona_id,PDO::PARAM_STR);
+  $sql->bindValue(1,$persona_id,PDO::PARAM_INT);
   $sql->bindValue(2,$tipo_orden_id,PDO::PARAM_INT);
   $sql->bindValue(3,$tipo,PDO::PARAM_INT);
   $sql->bindValue(4,$cantidad,PDO::PARAM_STR);
@@ -58,7 +58,7 @@ if($request == 'insertar_orden'){
 
 // editar en la tabla Orden
 if($request == 'editar_orden') {
-  $sql = $con->prepare("UPDATE orden SET persona_id=?,tipo_orden_id=?,tipo=?,cantidad=?,humedad=?,precio=?,total=?,observacion=? WHERE id=?");  
+  $sql = $con->prepare("UPDATE orden SET persona_id=?,tipo_orden_id=?,tipo=?,cantidad=?,humedad=?,precio=?,total=?,observacion=? WHERE id=?");
   $orden_id = $data->orden_id;
   $persona_id = $data->persona_id;
   $tipo_orden_id = $data->tipo_orden_id;
@@ -85,7 +85,7 @@ if($request == 'editar_orden') {
 }
 
 // Consulta todos los registros de la tabla persona para el componente orden
-if($request == 'consulta_personas_orden'){
+if($request == 'consulta_personas_select'){
   $sql = $con->prepare("SELECT * FROM persona ORDER BY id DESC");
   $sql->execute();
 
@@ -180,5 +180,60 @@ if($request == 'eliminar_persona'){
   $respuesta = mysqli_query($con,"update persona set borrado = 1 where id =".$persona_id);
 
   echo json_encode($respuesta);*/
+  exit;
+}
+// Consulta todos los registros de la tabla cuenta
+if($request == 'consulta_cuenta') {
+  $sql = $con->prepare("SELECT cuenta.*, persona.nombre, persona.id as persona_id FROM cuenta INNER JOIN persona on (cuenta.persona_id = persona.id) order by id desc");
+  $sql->execute();
+  $response = array();
+
+  while($row=$sql->fetch(PDO::FETCH_ASSOC)){
+    $response[] = $row;
+  }
+
+  echo json_encode($response);
+  exit;
+}
+
+// Se elimina la cuenta seleccionada
+if($request == 'eliminar_cuenta') {
+  $cuenta_id = $data->cuenta_id;
+  $sql = $con->prepare("DELETE FROM cuenta WHERE id=?");
+  $sql->bindValue(1,$cuenta_id,PDO::PARAM_INT);
+  $response=$sql->execute();
+  echo json_encode($response);
+  exit;
+}
+
+// insertar en la tabla Cuenta
+if($request == 'insertar_cuenta'){
+  $sql = $con->prepare("INSERT INTO cuenta(persona_id,numero,nombre_banco) VALUES (?,?,?)");
+  $persona_id = $data->persona_id;
+  $numero = $data->numero;
+  $nombre_banco = $data->nombre_banco;
+  $sql->bindValue(1,$persona_id,PDO::PARAM_INT);
+  $sql->bindValue(2,$numero,PDO::PARAM_INT);
+  $sql->bindValue(3,$nombre_banco,PDO::PARAM_STR);
+  $response=$sql->execute();
+  echo json_encode($response);
+
+  exit;
+}
+
+// editar en la tabla Cuenta
+if($request == 'editar_cuenta') {
+  $sql = $con->prepare("UPDATE cuenta SET persona_id=?,numero=?,nombre_banco=? WHERE id=?");
+  $cuenta_id = $data->cuenta_id;
+  $persona_id = $data->persona_id;
+  $numero = $data->numero;
+  $nombre_banco = $data->nombre_banco;
+  $sql->bindValue(1,$persona_id,PDO::PARAM_INT);
+  $sql->bindValue(2,$numero,PDO::PARAM_INT);
+  $sql->bindValue(3,$nombre_banco,PDO::PARAM_STR);
+  $sql->bindValue(4,$cuenta_id,PDO::PARAM_INT);
+  $response=$sql->execute();
+
+  echo json_encode($response);
   exit;
 }

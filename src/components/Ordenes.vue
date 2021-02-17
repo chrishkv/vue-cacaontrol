@@ -4,7 +4,7 @@
   <v-form>
     <v-container>
       <v-row>
-      <v-col cols="12" sm="2">
+        <v-col cols="12" sm="2">
           <v-select :items="tipo_select" filled label="Tipo" v-model="tipo" item-value="value"></v-select>
         </v-col>
 
@@ -216,7 +216,7 @@ import EventBus from '../bus'
 
      getPersonas: function() {
        axios.post('./ajaxfile.php', {
-         request: 'consulta_personas_orden',
+         request: 'consulta_personas_select',
         })
         .then(response => (this.personas = response.data))
         .catch((error) => (
