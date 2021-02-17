@@ -4,6 +4,14 @@
   <v-form>
     <v-container>
       <v-row>
+      <v-col cols="12" sm="2">
+          <v-select :items="tipo_select" filled label="Tipo" v-model="tipo" item-value="value"></v-select>
+        </v-col>
+
+        <v-col cols="12" sm="2">
+          <v-select :items="tipo_orden_select" filled label="Tipo de Orden" v-model="tipo_orden_id" item-value="value"></v-select>
+        </v-col>
+
         <v-col cols="12" sm="2">
           <v-autocomplete
             label="Nombre y Apellido"
@@ -18,32 +26,28 @@
         </v-col>
 
         <v-col cols="12" sm="2">
-          <v-select :items="tipo_select" filled label="Tipo" v-model="tipo" item-value="value"></v-select>
-        </v-col>
-
-        <v-col cols="12" sm="2">
-          <v-select :items="tipo_orden_select" filled label="Tipo de Orden" v-model="tipo_orden_id" item-value="value"></v-select>
-        </v-col>
-
-        <v-col cols="12" sm="2">
           <v-text-field v-model="cantidad" filled type="number" label="Cantidad" :rules="numberRules" required></v-text-field>
         </v-col>
 
+        <v-col cols="12" sm="2">
+          <v-text-field v-show="this.tipo == 1 || this.tipo == 3" v-model="humedad" filled type="number" label="% Humedad" :rules="humedadRules"></v-text-field>
+        </v-col>
+      </v-row>
+      <v-row>
         <v-col cols="12" sm="2">
           <v-text-field v-model="precio" filled type="number" label="Precio" :rules="numberRules" required></v-text-field>
         </v-col>
 
         <v-col cols="12" sm="1">
-          <v-text-field v-model="total" filled label="Total" :disabled=true></v-text-field>
+          <v-text-field v-model="total" filled label="$ Total" :disabled=true></v-text-field>
+        </v-col>
+
+        <v-col cols="12" sm="4">
+          <v-text-field v-model="observacion" filled label="Observacion"></v-text-field>
         </v-col>
 
         <v-col cols="12" sm="1">
           <v-btn v-on:click="addOrden" color="primary" dark large>Guardar</v-btn>
-        </v-col>
-      </v-row>
-      <v-row>
-        <v-col cols="12" sm="11">
-          <v-text-field v-model="observacion" filled label="Observacion"></v-text-field>
         </v-col>
       </v-row>
     </v-container>
@@ -67,7 +71,7 @@
         <v-icon
           small
           class="mr-2"
-          @click="editItem(item)"
+          @click="editOrden(item)"
         >
           mdi-pencil
         </v-icon>
@@ -106,11 +110,19 @@ import EventBus from '../bus'
 
     watch: {
       cantidad: function (newVar1) {
-        this.total = newVar1 * this.precio;
+        if (this.tipo == 4) {
+          this.total = newVar1 * this.precio;
+        } else {
+          this.total = newVar1 * (this.precio / 100);
+        }
         this.total = parseFloat(this.total).toFixed(2);
       },
       precio: function (newVar2) {
-        this.total = this.cantidad * newVar2;
+        if (this.tipo == 4) {
+          this.total = newVar2 * this.precio;
+        } else {
+          this.total = newVar2 * (this.precio / 100);
+        }
         this.total = parseFloat(this.total).toFixed(2);
       }
     },
@@ -119,32 +131,74 @@ import EventBus from '../bus'
       addOrden: function () {
         if(this.persona_id != '' && this.cantidad != '' && this.precio != '' &&
           this.cantidad > 0 && this.precio > 0) {
-          axios.post('./ajaxfile.php', {
-            request: 'insertar_orden',
-            persona_id: this.persona_id,
-            tipo_orden_id: this.tipo_orden_id,
-            cantidad: this.cantidad,
-            tipo: this.tipo,
-            precio: this.precio,
-            total: this.total,
-            observacion: this.observacion,
-            fecha: moment(String(new Date())).format('YYYY/MM/DD hh:mm:ss')
-          })
-          .then((/*response*/) => (
-            //console.log(response)
-            console.log(this.personas.find((item)=>{return item.id == this.persona_id}).nombre),
-            this.ordenes.unshift({
-              persona_id: this.personas.find((item)=>{return item.id == this.persona_id}).nombre,
-              tipo_orden_id: this.tipo_orden_id ? 'Venta' : 'Compra',
-              cantidad: this.cantidad + ' lb',
-              tipo: this.tipo_select[this.tipo].text,
+            //indica que va a editar
+          if(this.orden_id) {
+            axios.post('./ajaxfile.php', {
+              request: 'editar_orden',
+              orden_id: this.orden_id,
+              persona_id: this.persona_id,
+              tipo_orden_id: this.tipo_orden_id,
+              cantidad: this.cantidad,
+              humedad: this.humedad,
+              tipo: this.tipo,
+              precio: this.precio,
+              total: this.total,
+              observacion: this.observacion
+            })
+            .then((/*response*/) => (
+              //console.log(response)
+              this.getOrdenes(),
+              //Se borra la informacion de las variables
+              this.persona_id = '',
+              this.tipo_orden_id = 0,
+              this.cantidad = '',
+              this.humedad = '',
+              this.tipo = 0,
+              this.precio = '',
+              this.total = '',
+              this.observacion = ''
+            ))
+            .catch((error) => (console.log(error)))
+          } else {
+            //indica que va a ingresar una orden nueva
+            axios.post('./ajaxfile.php', {
+              request: 'insertar_orden',
+              persona_id: this.persona_id,
+              tipo_orden_id: this.tipo_orden_id,
+              cantidad: this.cantidad,
+              humedad: this.humedad,
+              tipo: this.tipo,
               precio: this.precio,
               total: this.total,
               observacion: this.observacion,
               fecha: moment(String(new Date())).format('YYYY/MM/DD hh:mm:ss')
             })
-          ))
-          .catch(error => (console.log(error)))
+            .then((/*response*/) => (
+              //console.log(response)
+              this.ordenes.unshift({
+                nombre: this.personas.find((item)=>{return item.id == this.persona_id}).nombre,
+                persona_id:this.persona_id,
+                tipo_orden_id: this.tipo_orden_id ? 'Venta' : 'Compra',
+                cantidad: this.cantidad + ' lb',
+                humedad: this.humedad,
+                tipo: this.tipo_select[this.tipo].text,
+                precio: this.precio,
+                total: this.total,
+                observacion: this.observacion,
+                fecha: moment(String(new Date())).format('YYYY/MM/DD hh:mm:ss')
+              }),
+              //Se borra la informacion de las variables
+              this.persona_id = '',
+              this.tipo_orden_id = 0,
+              this.cantidad = '',
+              this.humedad = '',
+              this.tipo = 0,
+              this.precio = '',
+              this.total = '',
+              this.observacion = ''
+            ))
+            .catch((error) => (console.log(error)))
+          }
         } else {
           alert('Faltan datos.');
         }
@@ -165,18 +219,12 @@ import EventBus from '../bus'
          request: 'consulta_personas_orden',
         })
         .then(response => (this.personas = response.data))
-        .catch( (error) => (
-          console.log(error),
-          this.personas =[
-            {id:0, nombre:'primero'},
-            {id:1, nombre:'segundo'},
-            {id:2, nombre:'tercero'}
-          ]
+        .catch((error) => (
+          console.log(error)
       ));
     },
 
     deleteOrden: function (orden) {
-      console.log(orden)
       axios.post('./ajaxfile.php', {
         request: 'eliminar_orden',
         orden_id: orden.id
@@ -189,6 +237,17 @@ import EventBus from '../bus'
          console.log(error)
      ));
     },
+
+    editOrden: function (orden) {
+      this.persona_id = orden.persona_id,
+      this.orden_id = orden.id,
+      this.tipo_orden_id = (orden.tipo_orden_id == 'Compra') ? 0 : 1,
+      this.cantidad = orden.cantidad.match(/\d+/)[0],
+      this.humedad = orden.humedad,
+      this.tipo = this.tipo_array_busqueda.indexOf(orden.tipo),
+      this.precio = orden.precio,
+      this.observacion = orden.observacion
+    },
     },
 
     data () {
@@ -197,6 +256,7 @@ import EventBus from '../bus'
           orden_id:'',
           tipo_orden_id:0,
           cantidad:'',
+          humedad:'',
           tipo:0,
           precio:'',
           total:'',
@@ -207,23 +267,34 @@ import EventBus from '../bus'
           tipo_orden_select: [{text:'Compra', value:0},{text:'Venta', value:1}],
           tipo_select: [
             {text:'Latas CCN51', value:0},
-            {text:'Seco CCN51 lbs', value:1},
+            {text:'Seco CCN51', value:1},
             {text:'Latas Nacional', value:2},
             {text:'Seco Nacional', value:3},
             {text:'Latas Monilla', value:4},
           ],
+          tipo_array_busqueda:[
+            'Latas CCN51',
+            'Seco CCN51',
+            'Latas Nacional',
+            'Seco Nacional',
+            'Latas Monilla'
+          ],
           numberRules: [
             v => !!v || 'Valor es Obligatorio',
+            v => v > 0 || 'El valor debe ser mayor a 0',
+          ],
+          humedadRules: [
             v => v > 0 || 'El valor debe ser mayor a 0',
           ],
           headers: [
             {
               text: 'Persona Nombre',
               align: 'start',
-              value: 'persona_id',
+              value: 'nombre',
             },
             { text: 'Tipo Orden', value: 'tipo_orden_id' },
             { text: 'Cantidad', value: 'cantidad' },
+            { text: 'Humedad', value: 'humedad' },
             { text: 'Tipo', value: 'tipo' },
             { text: 'Precio', value: 'precio' },
             { text: 'Total', value: 'total' },

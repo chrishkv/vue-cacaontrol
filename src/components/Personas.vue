@@ -20,12 +20,8 @@
           <v-text-field v-model="mail" filled label="E-Mail" :rules="emailRules"></v-text-field>
         </v-col>
 
-        <v-col cols="12" sm="1">
+        <v-col cols="12" sm="2">
           <v-text-field v-model="hectarea" filled label="Hectarea" :rules="hectareaRules" required></v-text-field>
-        </v-col>
-
-        <v-col cols="12" sm="1">
-          <v-btn v-on:click="addPersona" color="primary" dark large>Guardar</v-btn>
         </v-col>
 
         <v-col cols="12" sm="5">
@@ -34,6 +30,10 @@
 
         <v-col cols="12" sm="5">
           <v-text-field v-model="parcela" filled label="Direccion de Parcela"></v-text-field>
+        </v-col>
+
+        <v-col cols="12" sm="1">
+          <v-btn v-on:click="addPersona" color="primary" dark large>Guardar</v-btn>
         </v-col>
       </v-row>
     </v-container>

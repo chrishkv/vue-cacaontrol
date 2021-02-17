@@ -7,7 +7,7 @@ $request = $data->request;
 
 // Consulta todos los registros de la tabla orden
 if($request == 'consulta_orden'){
-  $sql = $con->prepare("SELECT orden.*, persona.nombre FROM orden INNER JOIN persona on (orden.persona_id = persona.id) WHERE fecha BETWEEN ? AND ? order by id desc");
+  $sql = $con->prepare("SELECT orden.*, persona.nombre, persona.id as persona_id FROM orden INNER JOIN persona on (orden.persona_id = persona.id) WHERE fecha BETWEEN ? AND ? order by id desc");
   $fecha_desde=date('Y-m-d',strtotime('-29 days',strtotime("now"))) . " 00:00:00";
   $fecha_hasta=date("Y-m-d", strtotime("now")) . " 23:59:59";
   $sql->bindValue(1,$fecha_desde,PDO::PARAM_STR);
@@ -18,7 +18,7 @@ if($request == 'consulta_orden'){
 
   while($row=$sql->fetch(PDO::FETCH_ASSOC)){
     $row['tipo_orden_id'] = $row['tipo_orden_id'] ? 'Venta' : 'Compra';
-    $row['persona_id'] = $row['nombre'];
+    $row['nombre'] = $row['nombre'];
     $row['tipo'] = $tipos[$row['tipo']];
     $row['cantidad'] = $row['cantidad'] . ' lb';
     $response[] = $row;
@@ -30,27 +30,57 @@ if($request == 'consulta_orden'){
 
 // insertar en la tabla Orden
 if($request == 'insertar_orden'){
-  $sql = $con->prepare("INSERT INTO orden(persona_id,tipo_orden_id,tipo,cantidad,precio,total,observacion,fecha) VALUES (?,?,?,?,?,?,?,?)");
+  $sql = $con->prepare("INSERT INTO orden(persona_id,tipo_orden_id,tipo,cantidad,humedad,precio,total,observacion,fecha) VALUES (?,?,?,?,?,?,?,?,?)");
   $persona_id = $data->persona_id;
   $tipo_orden_id = $data->tipo_orden_id;
   $tipo = $data->tipo;
   $cantidad = $data->cantidad;
+  $humedad = $data->humedad?:null;
   $precio = $data->precio;
   $total = $data->total;
-  $observacion = $data->observacion;
+  $observacion = $data->observacion?:null;
   $fecha = $data->fecha;
 
   $sql->bindValue(1,$persona_id,PDO::PARAM_STR);
   $sql->bindValue(2,$tipo_orden_id,PDO::PARAM_INT);
   $sql->bindValue(3,$tipo,PDO::PARAM_INT);
   $sql->bindValue(4,$cantidad,PDO::PARAM_STR);
-  $sql->bindValue(5,$precio,PDO::PARAM_STR);
-  $sql->bindValue(6,$total,PDO::PARAM_STR);
-  $sql->bindValue(7,$observacion,PDO::PARAM_STR);
-  $sql->bindValue(8,$fecha,PDO::PARAM_STR);
+  $sql->bindValue(5,$humedad,PDO::PARAM_INT);
+  $sql->bindValue(6,$precio,PDO::PARAM_STR);
+  $sql->bindValue(7,$total,PDO::PARAM_STR);
+  $sql->bindValue(8,$observacion,PDO::PARAM_STR);
+  $sql->bindValue(9,$fecha,PDO::PARAM_STR);
   $response=$sql->execute();
   echo json_encode($response);
 
+  exit;
+}
+
+// editar en la tabla Orden
+if($request == 'editar_orden') {
+  $sql = $con->prepare("UPDATE orden SET persona_id=?,tipo_orden_id=?,tipo=?,cantidad=?,humedad=?,precio=?,total=?,observacion=? WHERE id=?");  
+  $orden_id = $data->orden_id;
+  $persona_id = $data->persona_id;
+  $tipo_orden_id = $data->tipo_orden_id;
+  $tipo = $data->tipo;
+  $cantidad = $data->cantidad;
+  $humedad = $data->humedad?:null;
+  $precio = $data->precio;
+  $total = $data->total;
+  $observacion = $data->observacion?:null;
+
+  $sql->bindValue(1,$persona_id,PDO::PARAM_INT);
+  $sql->bindValue(2,$tipo_orden_id,PDO::PARAM_INT);
+  $sql->bindValue(3,$tipo,PDO::PARAM_INT);
+  $sql->bindValue(4,$cantidad,PDO::PARAM_STR);
+  $sql->bindValue(5,$humedad,PDO::PARAM_INT);
+  $sql->bindValue(6,$precio,PDO::PARAM_STR);
+  $sql->bindValue(7,$total,PDO::PARAM_STR);
+  $sql->bindValue(8,$observacion,PDO::PARAM_STR);
+  $sql->bindValue(9,$orden_id,PDO::PARAM_INT);
+  $response=$sql->execute();
+
+  echo json_encode($response);
   exit;
 }
 
