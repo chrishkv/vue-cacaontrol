@@ -84,6 +84,16 @@ if($request == 'editar_orden') {
   exit;
 }
 
+// Se elimina la orden seleccionada
+if($request == 'eliminar_orden') {
+  $orden_id = $data->orden_id;
+  $sql = $con->prepare("DELETE FROM orden WHERE id=?");
+  $sql->bindValue(1,$orden_id,PDO::PARAM_INT);
+  $response=$sql->execute();
+  echo json_encode($response);
+  exit;
+}
+
 // Consulta todos los registros de la tabla persona para el componente orden
 if($request == 'consulta_personas_select'){
   $sql = $con->prepare("SELECT * FROM persona ORDER BY id DESC");
@@ -94,16 +104,6 @@ if($request == 'consulta_personas_select'){
     $response[] = $row;
   }
 
-  echo json_encode($response);
-  exit;
-}
-
-// Se elimina la orden seleccionada
-if($request == 'eliminar_orden') {
-  $orden_id = $data->orden_id;
-  $sql = $con->prepare("DELETE FROM orden WHERE id=?");
-  $sql->bindValue(1,$orden_id,PDO::PARAM_INT);
-  $response=$sql->execute();
   echo json_encode($response);
   exit;
 }
@@ -182,6 +182,7 @@ if($request == 'eliminar_persona'){
   echo json_encode($respuesta);*/
   exit;
 }
+
 // Consulta todos los registros de la tabla cuenta
 if($request == 'consulta_cuenta') {
   $sql = $con->prepare("SELECT cuenta.*, persona.nombre, persona.id as persona_id FROM cuenta INNER JOIN persona on (cuenta.persona_id = persona.id) order by id desc");
@@ -192,16 +193,6 @@ if($request == 'consulta_cuenta') {
     $response[] = $row;
   }
 
-  echo json_encode($response);
-  exit;
-}
-
-// Se elimina la cuenta seleccionada
-if($request == 'eliminar_cuenta') {
-  $cuenta_id = $data->cuenta_id;
-  $sql = $con->prepare("DELETE FROM cuenta WHERE id=?");
-  $sql->bindValue(1,$cuenta_id,PDO::PARAM_INT);
-  $response=$sql->execute();
   echo json_encode($response);
   exit;
 }
@@ -234,6 +225,82 @@ if($request == 'editar_cuenta') {
   $sql->bindValue(4,$cuenta_id,PDO::PARAM_INT);
   $response=$sql->execute();
 
+  echo json_encode($response);
+  exit;
+}
+
+// Se elimina la cuenta seleccionada
+if($request == 'eliminar_cuenta') {
+  $cuenta_id = $data->cuenta_id;
+  $sql = $con->prepare("DELETE FROM cuenta WHERE id=?");
+  $sql->bindValue(1,$cuenta_id,PDO::PARAM_INT);
+  $response=$sql->execute();
+  echo json_encode($response);
+  exit;
+}
+
+// Consulta todos los registros de la tabla otras_cuentas
+if($request == 'consulta_otras_cuenta') {
+  $sql = $con->prepare("SELECT otras_cuentas.*, persona.nombre, persona.id as persona_id FROM otras_cuentas INNER JOIN persona on (otras_cuentas.persona_id = persona.id) WHERE fecha BETWEEN ? AND ? order by id desc");
+  $fecha_desde=date('Y-m-d',strtotime('-29 days',strtotime("now"))) . " 00:00:00";
+  $fecha_hasta=date("Y-m-d", strtotime("now")) . " 23:59:59";
+  $sql->bindValue(1,$fecha_desde,PDO::PARAM_STR);
+  $sql->bindValue(2,$fecha_hasta,PDO::PARAM_STR);
+  $sql->execute();
+  $response = array();
+  while($row=$sql->fetch(PDO::FETCH_ASSOC)){
+    $row['tipo_orden_nombre'] = $row['tipo_orden_id'] ? ($row['tipo_orden_id'] == 1) ? 'Venta' : 'Gasto' : 'Compra';
+    $response[] = $row;
+  }
+
+  echo json_encode($response);
+  exit;
+}
+
+// insertar en la tabla Otras Cuentas
+if($request == 'insertar_otras_cuenta') {
+  $sql = $con->prepare("INSERT INTO otras_cuentas(persona_id,tipo_orden_id,cantidad,observacion,fecha) VALUES (?,?,?,?,?)");
+  $persona_id = $data->persona_id;
+  $tipo_orden_id = $data->tipo_orden_id;
+  $cantidad = $data->cantidad;
+  $observacion = $data->observacion;
+  $fecha = $data->fecha;
+  $sql->bindValue(1,$persona_id,PDO::PARAM_INT);
+  $sql->bindValue(2,$tipo_orden_id,PDO::PARAM_INT);
+  $sql->bindValue(3,$cantidad,PDO::PARAM_STR);
+  $sql->bindValue(4,$observacion,PDO::PARAM_STR);
+  $sql->bindValue(5,$fecha,PDO::PARAM_STR);
+  $response=$sql->execute();
+  echo json_encode($response);
+
+  exit;
+}
+
+// editar en la tabla Otras Cuenta
+if($request == 'editar_otras_cuenta') {
+  $sql = $con->prepare("UPDATE otras_cuentas SET persona_id=?,tipo_orden_id=?,cantidad=?,observacion=? WHERE id=?");
+  $otras_cuenta_id = $data->otras_cuenta_id;
+  $persona_id = $data->persona_id;
+  $tipo_orden_id = $data->tipo_orden_id;
+  $cantidad = $data->cantidad;
+  $observacion = $data->observacion;
+  $sql->bindValue(1,$persona_id,PDO::PARAM_INT);
+  $sql->bindValue(2,$tipo_orden_id,PDO::PARAM_INT);
+  $sql->bindValue(3,$cantidad,PDO::PARAM_STR);
+  $sql->bindValue(4,$observacion,PDO::PARAM_STR);
+  $sql->bindValue(5,$otras_cuenta_id,PDO::PARAM_INT);
+  $response=$sql->execute();
+
+  echo json_encode($response);
+  exit;
+}
+
+// Se elimina la otras cuenta seleccionada
+if($request == 'eliminar_otras_cuenta') {
+  $otras_cuenta_id = $data->otras_cuenta_id;
+  $sql = $con->prepare("DELETE FROM otras_cuentas WHERE id=?");
+  $sql->bindValue(1,$otras_cuenta_id,PDO::PARAM_INT);
+  $response=$sql->execute();
   echo json_encode($response);
   exit;
 }
