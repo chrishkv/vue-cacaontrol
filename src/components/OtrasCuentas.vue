@@ -14,19 +14,20 @@
             item-value="id"
             item-text="nombre"
             :items="personas"
+            background-color="#AFEEEE"
           ></v-autocomplete>
         </v-col>
 
         <v-col cols="12" sm="2">
-          <v-select :items="tipo_orden_select" filled label="Tipo de Orden" v-model="tipo_orden_id" item-value="value"></v-select>
+          <v-select :items="tipo_orden_select" filled label="Tipo de Orden" v-model="tipo_orden_id" item-value="value" background-color="#AFEEEE"></v-select>
         </v-col>
 
         <v-col cols="12" sm="2">
-          <v-text-field v-model="cantidad" filled label="$ Total" :rules="cantidadRules" required></v-text-field>
+          <v-text-field v-model="cantidad" filled label="$ Total" :rules="cantidadRules" background-color="#AFEEEE" required></v-text-field>
         </v-col>
 
         <v-col cols="12" sm="4">
-          <v-text-field v-model="observacion" filled label="Observacion" :rules="observacionRules" required></v-text-field>
+          <v-text-field v-model="observacion" filled label="Observacion" :rules="observacionRules" background-color="#AFEEEE" required></v-text-field>
         </v-col>
 
         <v-col cols="12" sm="1">

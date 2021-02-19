@@ -1,8 +1,8 @@
 <template>
   <div>
   <v-tabs
-    color="cyan"
-    dark
+    color="black"
+    background-color="#4DB6AC"
     slider-color="yellow"
     >
     <v-tab ripple>
@@ -16,6 +16,9 @@
     </v-tab>
     <v-tab ripple>
       Cuentas
+    </v-tab>
+    <v-tab ripple>
+      Resportes
     </v-tab>
     <v-tab-item>
         <Ordenes/>
@@ -33,6 +36,11 @@
     <v-tab-item>
       <v-card flat>
         <Cuentas/>
+      </v-card>
+    </v-tab-item>
+    <v-tab-item>
+      <v-card flat>
+        <h1>Resporte</h1>
       </v-card>
     </v-tab-item>
     </v-tabs>
@@ -55,7 +63,7 @@ export default {
     OtrasCuentas
   },
 
-  data: () => ({    
+  data: () => ({
   }),
 };
 </script>

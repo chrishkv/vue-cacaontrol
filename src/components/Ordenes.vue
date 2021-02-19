@@ -5,11 +5,11 @@
     <v-container>
       <v-row>
         <v-col cols="12" sm="2">
-          <v-select :items="tipo_select" filled label="Tipo" v-model="tipo" item-value="value"></v-select>
+          <v-select :items="tipo_select" filled label="Tipo" v-model="tipo" item-value="value" background-color="#AFEEEE"></v-select>
         </v-col>
 
         <v-col cols="12" sm="2">
-          <v-select :items="tipo_orden_select" filled label="Tipo de Orden" v-model="tipo_orden_id" item-value="value"></v-select>
+          <v-select :items="tipo_orden_select" filled label="Tipo de Orden" v-model="tipo_orden_id" item-value="value" background-color="#AFEEEE"></v-select>
         </v-col>
 
         <v-col cols="12" sm="2">
@@ -22,32 +22,33 @@
             item-value="id"
             item-text="nombre"
             :items="personas"
+            background-color="#AFEEEE"
           ></v-autocomplete>
         </v-col>
 
         <v-col cols="12" sm="2">
-          <v-text-field v-model="cantidad" filled type="number" label="Cantidad" :rules="numberRules" required></v-text-field>
+          <v-text-field v-model="cantidad" filled type="number" label="Cantidad" :rules="numberRules" background-color="#AFEEEE" required></v-text-field>
         </v-col>
 
         <v-col cols="12" sm="2">
-          <v-text-field v-show="this.tipo == 1 || this.tipo == 3" v-model="humedad" filled type="number" label="% Humedad" :rules="humedadRules"></v-text-field>
+          <v-text-field v-show="this.tipo == 1 || this.tipo == 3" v-model="humedad" filled type="number" label="% Humedad" :rules="humedadRules" background-color="#AFEEEE"></v-text-field>
         </v-col>
       </v-row>
       <v-row>
         <v-col cols="12" sm="2">
-          <v-text-field v-model="precio" filled type="number" label="Precio" :rules="numberRules" required></v-text-field>
+          <v-text-field v-model="precio" filled type="number" label="Precio" :rules="numberRules" background-color="#AFEEEE" required></v-text-field>
         </v-col>
 
         <v-col cols="12" sm="1">
-          <v-text-field v-model="total" filled label="$ Total" :disabled=true></v-text-field>
+          <v-text-field v-model="total" filled label="$ Total" :disabled=true background-color="#AFEEEE"></v-text-field>
         </v-col>
 
         <v-col cols="12" sm="4">
-          <v-text-field v-model="observacion" filled label="Observacion"></v-text-field>
+          <v-text-field v-model="observacion" filled label="Observacion" background-color="#AFEEEE"></v-text-field>
         </v-col>
 
         <v-col cols="12" sm="1">
-          <v-btn v-on:click="addOrden" color="primary" dark large>Guardar</v-btn>
+          <v-btn v-on:click="addOrden" color="primary" large>Guardar</v-btn>
         </v-col>
       </v-row>
     </v-container>
@@ -87,9 +88,9 @@
   </div>
 </template>
 <style scoped>
-  #app {
-      background-color: #5cbbf6 !important;
-  }
+  /*.v-text-field__slot {
+    background-color:"#AFEEEE" !important;
+  }*/
 </style>
 <script>
 import moment from 'moment'

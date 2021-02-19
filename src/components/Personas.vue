@@ -5,31 +5,31 @@
     <v-container>
       <v-row>
         <v-col cols="12" sm="3">
-          <v-text-field v-model="nombre" filled label="Nombre y Apellido" :rules="nameRules" clearable required></v-text-field>
+          <v-text-field v-model="nombre" filled label="Nombre y Apellido" :rules="nameRules" clearable background-color="#AFEEEE" required></v-text-field>
         </v-col>
 
         <v-col cols="12" sm="2">
-          <v-text-field v-model="cedula" filled label="Cedula" :rules="cedulaRules" required></v-text-field>
+          <v-text-field v-model="cedula" filled label="Cedula" :rules="cedulaRules" background-color="#AFEEEE" required></v-text-field>
         </v-col>
 
         <v-col cols="12" sm="2">
-          <v-text-field v-model="telefono" filled label="Telefono" :rules="telefonoRules"></v-text-field>
+          <v-text-field v-model="telefono" filled label="Telefono" :rules="telefonoRules" background-color="#AFEEEE"></v-text-field>
         </v-col>
 
         <v-col cols="12" sm="2">
-          <v-text-field v-model="mail" filled label="E-Mail" :rules="emailRules"></v-text-field>
+          <v-text-field v-model="mail" filled label="E-Mail" :rules="emailRules" background-color="#AFEEEE"></v-text-field>
         </v-col>
 
         <v-col cols="12" sm="2">
-          <v-text-field v-model="hectarea" filled label="Hectarea" :rules="hectareaRules" required></v-text-field>
+          <v-text-field v-model="hectarea" filled label="Hectarea" :rules="hectareaRules" background-color="#AFEEEE" required></v-text-field>
         </v-col>
 
         <v-col cols="12" sm="5">
-          <v-text-field v-model="direccion" filled label="Direccion"></v-text-field>
+          <v-text-field v-model="direccion" filled label="Direccion" background-color="#AFEEEE"></v-text-field>
         </v-col>
 
         <v-col cols="12" sm="5">
-          <v-text-field v-model="parcela" filled label="Direccion de Parcela"></v-text-field>
+          <v-text-field v-model="parcela" filled label="Direccion de Parcela" background-color="#AFEEEE"></v-text-field>
         </v-col>
 
         <v-col cols="12" sm="1">
