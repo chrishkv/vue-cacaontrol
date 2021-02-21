@@ -84,8 +84,7 @@
         :footer-props="{
           itemsPerPageText: 'Filas por página:',
           itemsPerPageAllText: 'Todos',
-          pageText: 'de',
-          itemsPerPageOptions: [20,50,100,-1],
+          itemsPerPageOptions: [20,50,100,-1],          
         }"
       >
       <template v-slot:item.actions="{ item }">
@@ -102,6 +101,9 @@
         >
           mdi-delete
         </v-icon>
+      </template>
+      <template #footer.page-text="props">
+        {{props.pageStart}}-{{props.pageStop}} de ~{{props.itemsLength}}
       </template>
       </v-data-table>
     </v-card>
