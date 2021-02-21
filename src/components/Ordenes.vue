@@ -197,9 +197,10 @@ import EventBus from '../bus'
               observacion: this.observacion,
               fecha: moment(String(new Date())).format('YYYY/MM/DD hh:mm:ss')
             })
-            .then((/*response*/) => (
-              //console.log(response)
+            .then((response) => (
+              console.log(response),
               this.ordenes.unshift({
+                id: response.data,
                 nombre: this.personas.find((item)=>{return item.id == this.persona_id}).nombre,
                 persona_id:this.persona_id,
                 tipo_orden_id: this.tipo_orden_id ? 'Venta' : 'Compra',

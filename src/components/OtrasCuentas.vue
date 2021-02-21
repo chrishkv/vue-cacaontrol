@@ -129,7 +129,7 @@ import EventBus from '../bus'
             })
             .then((response) => (
               this.otrasCuentas.unshift({
-                otras_cuenta_id: response.data,
+                id: response.data,
                 nombre: this.personas.find((item)=>{return item.id == this.persona_id}).nombre,
                 persona_id: this.persona_id,
                 tipo_orden_id: this.tipo_orden_id,

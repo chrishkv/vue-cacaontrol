@@ -50,7 +50,9 @@ if($request == 'insertar_orden'){
   $sql->bindValue(7,$total,PDO::PARAM_STR);
   $sql->bindValue(8,$observacion,PDO::PARAM_STR);
   $sql->bindValue(9,$fecha,PDO::PARAM_STR);
-  $response=$sql->execute();
+  $sql->execute();
+  //Devuelve el id del ultimo registro ingresado
+  $response=$con->lastInsertId();
   echo json_encode($response);
 
   exit;
@@ -206,7 +208,9 @@ if($request == 'insertar_cuenta'){
   $sql->bindValue(1,$persona_id,PDO::PARAM_INT);
   $sql->bindValue(2,$numero,PDO::PARAM_INT);
   $sql->bindValue(3,$nombre_banco,PDO::PARAM_STR);
-  $response=$sql->execute();
+  $sql->execute();
+  //Devuelve el id del ultimo registro ingresado
+  $response=$con->lastInsertId();
   echo json_encode($response);
 
   exit;
@@ -270,7 +274,9 @@ if($request == 'insertar_otras_cuenta') {
   $sql->bindValue(3,$cantidad,PDO::PARAM_STR);
   $sql->bindValue(4,$observacion,PDO::PARAM_STR);
   $sql->bindValue(5,$fecha,PDO::PARAM_STR);
-  $response=$sql->execute();
+  $sql->execute();
+  //Devuelve el id del ultimo registro ingresado
+  $response=$con->lastInsertId();
   echo json_encode($response);
 
   exit;
