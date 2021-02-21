@@ -110,19 +110,27 @@ import EventBus from '../bus'
     },
 
     watch: {
-      cantidad: function (newVar1) {
-        if (this.tipo == 4) {
-          this.total = newVar1 * this.precio;
+      cantidad: function (cantidad) {
+        if (this.tipo == 1 || this.tipo == 3) {
+          this.total = (cantidad - (parseFloat((cantidad) * (this.humedad / 100))).toFixed(2))  * (parseFloat(this.precio / 100).toFixed(2));
         } else {
-          this.total = newVar1 * (this.precio / 100);
+          this.total = cantidad * this.precio;
         }
         this.total = parseFloat(this.total).toFixed(2);
       },
-      precio: function (newVar2) {
-        if (this.tipo == 4) {
-          this.total = newVar2 * this.precio;
+      precio: function (precio) {
+        if (this.tipo == 1 || this.tipo == 3) {
+          this.total = (this.cantidad - (parseFloat((this.cantidad) * (this.humedad / 100))).toFixed(2))  * (parseFloat(precio / 100).toFixed(2));
         } else {
-          this.total = newVar2 * (this.precio / 100);
+          this.total = precio * this.cantidad;
+        }
+        this.total = parseFloat(this.total).toFixed(2);
+      },
+      humedad: function (humedad) {
+        if (this.tipo == 1 || this.tipo == 3) {
+          this.total = (this.cantidad - (parseFloat((this.cantidad) * (humedad / 100))).toFixed(2))  * (parseFloat(this.precio / 100).toFixed(2));
+        } else {
+          this.total = this.precio * this.cantidad;
         }
         this.total = parseFloat(this.total).toFixed(2);
       }
