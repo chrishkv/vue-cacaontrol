@@ -1,6 +1,20 @@
 <template>
   <div>
   <br>
+  <v-snackbar
+    v-model="snackbar.visible"
+    :color="snackbar.color"
+    :timeout="snackbar.timeout"
+    :top="true">
+      <v-layout align-center pr-4>
+        <v-layout column>
+          <div>
+            <strong>{{ snackbar.title }}</strong>
+          </div>
+          <div>{{ snackbar.text }}</div>
+        </v-layout>
+      </v-layout>
+  </v-snackbar>
   <v-form>
     <v-container>
       <v-row>
@@ -52,6 +66,12 @@
         :headers="headers"
         :items="personas"
         :search="search"
+        :footer-props="{
+          itemsPerPageText: 'Filas por página:',
+          itemsPerPageAllText: 'Todos',
+          pageText: 'de',
+          itemsPerPageOptions: [20,50,100,-1],
+        }"
       >
       <template v-slot:item.actions="{ item }">
         <v-icon
@@ -96,20 +116,24 @@ import EventBus from '../bus'
               direccion: this.direccion,
               parcela: this.parcela
             })
-            .then((/*response*/) => (
-              //console.log(response),
-              //Se borra la informacion de las variables
-              this.persona_id = '',
-              this.nombre = '',
-              this.cedula = '',
-              this.telefono = '',
-              this.mail = '',
-              this.hectarea = '',
-              this.direccion = '',
-              this.parcela = '',
-              //luego de editar a la persona vuelve a rehacer la lista desde la BD
-              this.getPersonas()
-            ))
+            .then((response) => {
+              if (response.data) {
+                this.SnackbarShow("success", "Editado Correctamente."),
+                //Se borra la informacion de las variables
+                this.persona_id = '',
+                this.nombre = '',
+                this.cedula = '',
+                this.telefono = '',
+                this.mail = '',
+                this.hectarea = '',
+                this.direccion = '',
+                this.parcela = '',
+                //luego de editar a la persona vuelve a rehacer la lista desde la BD
+                this.getPersonas()
+              } else {
+                this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
+              }
+            })
             .catch((error) => (console.log(error)))
           } else {
             //indica que va a ingresar una persona nueva
@@ -123,34 +147,38 @@ import EventBus from '../bus'
               direccion: this.direccion,
               parcela: this.parcela
             })
-            .then((response) => (
-              //Agrega a la persona en la lista en la primera posición
-              console.log(response),
-              this.personas.unshift({
-                id: response.data,
-                nombre: this.nombre,
-                cedula: this.cedula,
-                telefono: this.telefono,
-                mail: this.mail,
-                hectarea: this.hectarea,
-                direccion: this.direccion,
-                parcela: this.parcela
-              }),
-              EventBus.$emit('add-persona', [this.nombre, response.data]),
-              //Se borra la informacion de las variables
-              this.persona_id = '',
-              this.nombre = '',
-              this.cedula = '',
-              this.telefono = '',
-              this.mail = '',
-              this.hectarea = '',
-              this.direccion = '',
-              this.parcela = ''
-            ))
+            .then((response) => {
+              if (response.data) {
+                this.SnackbarShow("success", "Guardado Correctamente."),
+                //Agrega a la persona en la lista en la primera posición
+                this.personas.unshift({
+                  id: response.data,
+                  nombre: this.nombre,
+                  cedula: this.cedula,
+                  telefono: this.telefono,
+                  mail: this.mail,
+                  hectarea: this.hectarea,
+                  direccion: this.direccion,
+                  parcela: this.parcela
+                }),
+                EventBus.$emit('add-persona', [this.nombre, response.data]),
+                //Se borra la informacion de las variables
+                this.persona_id = '',
+                this.nombre = '',
+                this.cedula = '',
+                this.telefono = '',
+                this.mail = '',
+                this.hectarea = '',
+                this.direccion = '',
+                this.parcela = ''
+            } else {
+              this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
+            }
+          })
             .catch((error) => (console.log(error)))
           }
         } else {
-          alert('Faltan datos revise los campos en rojo.');
+          this.SnackbarShow("warning", "Faltan algunos datos por favor revise.")
         }
       },
 
@@ -175,7 +203,7 @@ import EventBus from '../bus'
      },
 
      deletePersona(/*persona*/) {
-       alert('funcion aun no disponible')
+       this.SnackbarShow("error", "Funcion aún en construcción")
        /*axios.post('./ajaxfile.php', {
          request: 'eliminar_persona',
          persona_id: persona.persona_id,
@@ -192,6 +220,39 @@ import EventBus from '../bus'
        ))
        .catch(error => (console.log(error)))*/
      },
+
+     SnackbarShow(tipo, mensaje) {
+       if (!tipo) return;
+       switch (tipo) {
+         case "error":
+           this.snackbar = {
+             color: "error",
+             timeout: 2500,
+             title: "Error",
+             text: mensaje,
+             visible: true
+           };
+           break;
+         case "success":
+           this.snackbar = {
+             color: "success",
+             timeout: 2500,
+             title: "Listo",
+             text: mensaje,
+             visible: true
+           };
+           break;
+         case "warning":
+           this.snackbar = {
+             color: "warning",
+             timeout: 2500,
+             title: "¡¡¡Advertencia!!!",
+             text: mensaje,
+             visible: true
+           };
+           break;
+       }
+     },
     },
 
     data () {
@@ -206,6 +267,13 @@ import EventBus from '../bus'
           parcela:'',
           search: '',
           personas: [],
+          snackbar: {
+            color: null,
+            text: null,
+            timeout: 2500,
+            title: null,
+            visible: false
+          },
           nameRules: [
             v => !!v || 'Nombre es Obligatorio',
             v => v.length >= 10 || 'Nombre debe ser mayor a 10 Caracteres',

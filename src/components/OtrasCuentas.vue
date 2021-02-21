@@ -1,6 +1,20 @@
 <template>
   <div>
   <br>
+  <v-snackbar
+    v-model="snackbar.visible"
+    :color="snackbar.color"
+    :timeout="snackbar.timeout"
+    :top="true">
+      <v-layout align-center pr-4>
+        <v-layout column>
+          <div>
+            <strong>{{ snackbar.title }}</strong>
+          </div>
+          <div>{{ snackbar.text }}</div>
+        </v-layout>
+      </v-layout>
+  </v-snackbar>
   <v-form>
     <v-container>
       <v-row>
@@ -50,6 +64,12 @@
         :headers="headers"
         :items="otrasCuentas"
         :search="search"
+        :footer-props="{
+          itemsPerPageText: 'Filas por página:',
+          itemsPerPageAllText: 'Todos',
+          pageText: 'de',
+          itemsPerPageOptions: [20,50,100,-1],
+        }"
       >
       <template v-slot:item.actions="{ item }">
         <v-icon
@@ -96,7 +116,6 @@ import EventBus from '../bus'
       addOtrasCuenta: function () {
         if(this.persona_id != '' && this.cantidad != '' && this.observacion != '') {
           //indica que va a editar
-          console.log(this.otras_cuenta_id);
           if(this.otras_cuenta_id) {
             axios.post('./ajaxfile.php', {
               request: 'editar_otras_cuenta',
@@ -106,16 +125,18 @@ import EventBus from '../bus'
               cantidad: this.cantidad,
               observacion: this.observacion
             })
-            .then((/*response*/) => (
-              //console.log(response)
-              this.getOtrasCuentas(),
-              //Se borra la informacion de las variables
-              this.otras_cuenta_id = '',
-              this.persona_id = '',
-              this.tipo_orden_id = 2,
-              this.cantidad = '',
-              this.observacion = ''
-            ))
+            .then((response) => {
+              if (response.data) {
+                this.SnackbarShow("success", "Editado Correctamente."),
+                this.getOtrasCuentas(),
+                //Se borra la informacion de las variables
+                this.otras_cuenta_id = '',
+                this.persona_id = '',
+                this.tipo_orden_id = 2,
+                this.cantidad = '',
+                this.observacion = ''
+              }
+            })
             .catch((error) => (console.log(error)))
           } else {
             //indica que va a ingresar una cuenta nueva
@@ -127,27 +148,32 @@ import EventBus from '../bus'
               observacion: this.observacion,
               fecha: moment(String(new Date())).format('YYYY/MM/DD hh:mm:ss')
             })
-            .then((response) => (
-              this.otrasCuentas.unshift({
-                id: response.data,
-                nombre: this.personas.find((item)=>{return item.id == this.persona_id}).nombre,
-                persona_id: this.persona_id,
-                tipo_orden_id: this.tipo_orden_id,
-                cantidad: this.cantidad,
-                observacion: this.observacion,
-                fecha: moment(String(new Date())).format('YYYY/MM/DD hh:mm:ss')
-              }),
-              //Se borra la informacion de las variables
-              this.otras_cuenta_id = '',
-              this.persona_id = '',
-              this.tipo_orden_id = 2,
-              this.cantidad = '',
-              this.observacion = ''
-            ))
+            .then((response) => {
+              if (response.data) {
+                this.SnackbarShow("success", "Guardado Correctamente."),
+                this.otrasCuentas.unshift({
+                  id: response.data,
+                  nombre: this.personas.find((item)=>{return item.id == this.persona_id}).nombre,
+                  persona_id: this.persona_id,
+                  tipo_orden_id: this.tipo_orden_id,
+                  cantidad: this.cantidad,
+                  observacion: this.observacion,
+                  fecha: moment(String(new Date())).format('YYYY/MM/DD hh:mm:ss')
+                }),
+                //Se borra la informacion de las variables
+                this.otras_cuenta_id = '',
+                this.persona_id = '',
+                this.tipo_orden_id = 2,
+                this.cantidad = '',
+                this.observacion = ''
+              } else {
+                this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
+              }
+            })
             .catch((error) => (console.log(error)))
           }
         } else {
-          alert('Faltan datos.');
+          this.SnackbarShow("warning", "Faltan algunos datos por favor revise.")
         }
       },
 
@@ -176,13 +202,15 @@ import EventBus from '../bus'
         request: 'eliminar_otras_cuenta',
         otras_cuenta_id: otrasCuentas.id
        })
-       .then(response => (
-         console.log(response),
-         this.getOtrasCuentas()
-       ))
-       .catch( (error) => (
-         console.log(error)
-     ));
+       .then(response => {
+         if (response.data) {
+           this.SnackbarShow("success", "Borrado Correctamente"),
+           this.getOtrasCuentas()
+         } else {
+           this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
+         }
+       })
+       .catch((error) => (console.log(error)));
     },
 
     editOtrasCuenta: function (otrasCuentas) {
@@ -192,6 +220,39 @@ import EventBus from '../bus'
       this.tipo_orden_id = Number(otrasCuentas.tipo_orden_id),
       this.cantidad = otrasCuentas.cantidad,
       this.observacion = otrasCuentas.observacion
+    },
+
+    SnackbarShow(tipo, mensaje) {
+      if (!tipo) return;
+      switch (tipo) {
+        case "error":
+          this.snackbar = {
+            color: "error",
+            timeout: 2500,
+            title: "Error",
+            text: mensaje,
+            visible: true
+          };
+          break;
+        case "success":
+          this.snackbar = {
+            color: "success",
+            timeout: 2500,
+            title: "Listo",
+            text: mensaje,
+            visible: true
+          };
+          break;
+        case "warning":
+          this.snackbar = {
+            color: "warning",
+            timeout: 2500,
+            title: "¡¡¡Advertencia!!!",
+            text: mensaje,
+            visible: true
+          };
+          break;
+      }
     },
     },
 
@@ -205,6 +266,13 @@ import EventBus from '../bus'
           search:'',
           otrasCuentas:[],
           personas:[],
+          snackbar: {
+            color: null,
+            text: null,
+            timeout: 2500,
+            title: null,
+            visible: false
+          },
           tipo_orden_select:[{text:'Compra', value:0},{text:'Venta', value:1},{text:'Gasto', value:2}],
           cantidadRules:[
             v => !!v || 'Valor es Obligatorio',

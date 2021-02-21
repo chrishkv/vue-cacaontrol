@@ -3,7 +3,6 @@
   <br>
   <v-snackbar
     v-model="snackbar.visible"
-    auto-height
     :color="snackbar.color"
     :timeout="snackbar.timeout"
     :top="true">
@@ -82,6 +81,12 @@
         :headers="headers"
         :items="ordenes"
         :search="search"
+        :footer-props="{
+          itemsPerPageText: 'Filas por página:',
+          itemsPerPageAllText: 'Todos',
+          pageText: 'de',
+          itemsPerPageOptions: [20,50,100,-1],
+        }"
       >
       <template v-slot:item.actions="{ item }">
         <v-icon
@@ -155,7 +160,7 @@ import EventBus from '../bus'
       addOrden: function () {
         if(this.persona_id != '' && this.cantidad != '' && this.precio != '' &&
           this.cantidad > 0 && this.precio > 0) {
-            //indica que va a editar
+          //indica que va a editar
           if(this.orden_id) {
             axios.post('./ajaxfile.php', {
               request: 'editar_orden',
@@ -169,19 +174,24 @@ import EventBus from '../bus'
               total: this.total,
               observacion: this.observacion
             })
-            .then((/*response*/) => (
-              //console.log(response)
-              this.getOrdenes(),
-              //Se borra la informacion de las variables
-              this.persona_id = '',
-              this.tipo_orden_id = 0,
-              this.cantidad = '',
-              this.humedad = '',
-              this.tipo = 0,
-              this.precio = '',
-              this.total = '',
-              this.observacion = ''
-            ))
+            .then((response) => {
+              if (response.data) {
+                this.SnackbarShow("success", "Editado Correctamente."),
+                this.getOrdenes(),
+                //Se borra la informacion de las variables
+                this.orden_id= '',
+                this.persona_id = '',
+                this.tipo_orden_id = 0,
+                this.cantidad = '',
+                this.humedad = '',
+                this.tipo = 0,
+                this.precio = '',
+                this.total = '',
+                this.observacion = ''
+              } else {
+                this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
+              }
+            })
             .catch((error) => (console.log(error)))
           } else {
             //indica que va a ingresar una orden nueva
@@ -197,35 +207,39 @@ import EventBus from '../bus'
               observacion: this.observacion,
               fecha: moment(String(new Date())).format('YYYY/MM/DD hh:mm:ss')
             })
-            .then((response) => (
-              console.log(response),
-              this.ordenes.unshift({
-                id: response.data,
-                nombre: this.personas.find((item)=>{return item.id == this.persona_id}).nombre,
-                persona_id:this.persona_id,
-                tipo_orden_id: this.tipo_orden_id ? 'Venta' : 'Compra',
-                cantidad: this.cantidad + ' lb',
-                humedad: this.humedad,
-                tipo: this.tipo_select[this.tipo].text,
-                precio: this.precio,
-                total: this.total,
-                observacion: this.observacion,
-                fecha: moment(String(new Date())).format('YYYY/MM/DD hh:mm:ss')
-              }),
-              //Se borra la informacion de las variables
-              this.persona_id = '',
-              this.tipo_orden_id = 0,
-              this.cantidad = '',
-              this.humedad = '',
-              this.tipo = 0,
-              this.precio = '',
-              this.total = '',
-              this.observacion = ''
-            ))
+            .then((response) => {
+              if (response.data) {
+                this.SnackbarShow("success", "Guardado Correctamente."),
+                this.ordenes.unshift({
+                  id: response.data,
+                  nombre: this.personas.find((item)=>{return item.id == this.persona_id}).nombre,
+                  persona_id:this.persona_id,
+                  tipo_orden_id: this.tipo_orden_id ? 'Venta' : 'Compra',
+                  cantidad: this.cantidad + ' lb',
+                  humedad: this.humedad,
+                  tipo: this.tipo_select[this.tipo].text,
+                  precio: this.precio,
+                  total: this.total,
+                  observacion: this.observacion,
+                  fecha: moment(String(new Date())).format('YYYY/MM/DD hh:mm:ss')
+                }),
+                //Se borra la informacion de las variables
+                this.persona_id = '',
+                this.tipo_orden_id = 0,
+                this.cantidad = '',
+                this.humedad = '',
+                this.tipo = 0,
+                this.precio = '',
+                this.total = '',
+                this.observacion = ''
+              } else {
+                this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
+              }
+            })
             .catch((error) => (console.log(error)))
           }
         } else {
-          this.SnackbarShow("warning")
+          this.SnackbarShow("warning", "Faltan algunos datos por favor revise.")
         }
       },
 
@@ -234,9 +248,7 @@ import EventBus from '../bus'
           request: 'consulta_orden',
          })
          .then(response => (this.ordenes = response.data))
-         .catch( (error) => (
-           console.log(error)
-       ));
+         .catch( (error) => (console.log(error)));
      },
 
      getPersonas: function() {
@@ -244,9 +256,7 @@ import EventBus from '../bus'
          request: 'consulta_personas_select',
         })
         .then(response => (this.personas = response.data))
-        .catch((error) => (
-          console.log(error)
-      ));
+        .catch((error) => (console.log(error)));
     },
 
     deleteOrden: function (orden) {
@@ -254,13 +264,15 @@ import EventBus from '../bus'
         request: 'eliminar_orden',
         orden_id: orden.id
        })
-       .then(response => (
-         console.log(response),
-         this.getOrdenes()
-       ))
-       .catch( (error) => (
-         console.log(error)
-     ));
+       .then(response => {
+         if (response.data) {
+           this.SnackbarShow("success", "Borrado Correctamente"),
+           this.getOrdenes()
+         } else {
+           this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
+         }
+       })
+       .catch( (error) => (console.log(error)));
     },
 
     editOrden: function (orden) {
@@ -274,15 +286,15 @@ import EventBus from '../bus'
       this.observacion = orden.observacion
     },
 
-    SnackbarShow(type) {
-      if (!type) return;
-      switch (type) {
+    SnackbarShow(tipo, mensaje) {
+      if (!tipo) return;
+      switch (tipo) {
         case "error":
           this.snackbar = {
             color: "error",
             timeout: 2500,
             title: "Error",
-            text: "Something's gone wrong, sorry.",
+            text: mensaje,
             visible: true
           };
           break;
@@ -290,8 +302,8 @@ import EventBus from '../bus'
           this.snackbar = {
             color: "success",
             timeout: 2500,
-            title: "Success",
-            text: "That worked, hoorah.",
+            title: "Listo",
+            text: mensaje,
             visible: true
           };
           break;
@@ -300,7 +312,7 @@ import EventBus from '../bus'
             color: "warning",
             timeout: 2500,
             title: "¡¡¡Advertencia!!!",
-            text: "Faltan datos por favor revise nuevamente.",
+            text: mensaje,
             visible: true
           };
           break;

@@ -1,6 +1,20 @@
 <template>
   <div>
   <br>
+  <v-snackbar
+    v-model="snackbar.visible"
+    :color="snackbar.color"
+    :timeout="snackbar.timeout"
+    :top="true">
+      <v-layout align-center pr-4>
+        <v-layout column>
+          <div>
+            <strong>{{ snackbar.title }}</strong>
+          </div>
+          <div>{{ snackbar.text }}</div>
+        </v-layout>
+      </v-layout>
+  </v-snackbar>
   <v-form>
     <v-container>
       <v-row>
@@ -56,6 +70,12 @@
         :headers="headers"
         :items="cuentas"
         :search="search"
+        :footer-props="{
+          itemsPerPageText: 'Filas por página:',
+          itemsPerPageAllText: 'Todos',
+          pageText: 'de',
+          itemsPerPageOptions: [20,50,100,-1],
+        }"
       >
       <template v-slot:item.actions="{ item }">
         <v-icon
@@ -101,7 +121,6 @@ import EventBus from '../bus'
       addCuenta: function () {
         if(this.persona_id != '' && this.numero != '') {
           //indica que va a editar
-          console.log(this.cuenta_id);
           if(this.cuenta_id) {
             axios.post('./ajaxfile.php', {
               request: 'editar_cuenta',
@@ -110,15 +129,19 @@ import EventBus from '../bus'
               numero: this.numero,
               nombre_banco: this.nombre_banco,
             })
-            .then((/*response*/) => (
-              //console.log(response)
-              this.getCuentas(),
-              //Se borra la informacion de las variables
-              this.cuenta_id = '',
-              this.persona_id = '',
-              this.numero = '',
-              this.nombre_banco = 'Banco Pichincha'
-            ))
+            .then((response) => {
+              if (response.data) {
+                this.SnackbarShow("success", "Editado Correctamente."),
+                this.getCuentas(),
+                //Se borra la informacion de las variables
+                this.cuenta_id = '',
+                this.persona_id = '',
+                this.numero = '',
+                this.nombre_banco = 'Banco Pichincha'
+              } else {
+                this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
+              }
+            })
             .catch((error) => (console.log(error)))
           } else {
             //indica que va a ingresar una cuenta nueva
@@ -128,24 +151,29 @@ import EventBus from '../bus'
               numero: this.numero,
               nombre_banco: this.nombre_banco
             })
-            .then((response) => (
-              this.cuentas.unshift({
-                id: response.data,
-                nombre: this.personas.find((item)=>{return item.id == this.persona_id}).nombre,
-                persona_id: this.persona_id,
-                numero: this.numero,
-                nombre_banco: this.nombre_banco
-              }),
-              //Se borra la informacion de las variables
-              this.cuenta_id = '',
-              this.persona_id = '',
-              this.numero = '',
-              this.nombre_banco = 'Banco Pichincha'
-            ))
+            .then((response) => {
+              if (response.data) {
+                this.SnackbarShow("success", "Guardado Correctamente."),
+                this.cuentas.unshift({
+                  id: response.data,
+                  nombre: this.personas.find((item)=>{return item.id == this.persona_id}).nombre,
+                  persona_id: this.persona_id,
+                  numero: this.numero,
+                  nombre_banco: this.nombre_banco
+                }),
+                //Se borra la informacion de las variables
+                this.cuenta_id = '',
+                this.persona_id = '',
+                this.numero = '',
+                this.nombre_banco = 'Banco Pichincha'
+              } else {
+                this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
+              }
+            })
             .catch((error) => (console.log(error)))
           }
         } else {
-          alert('Faltan datos.');
+          this.SnackbarShow("warning", "Faltan algunos datos por favor revise.")
         }
       },
 
@@ -174,13 +202,15 @@ import EventBus from '../bus'
         request: 'eliminar_cuenta',
         cuenta_id: cuenta.id
        })
-       .then(response => (
-         console.log(response),
-         this.getCuentas()
-       ))
-       .catch( (error) => (
-         console.log(error)
-     ));
+       .then((response) => {
+         if (response.data) {
+           this.SnackbarShow("success", "Borrado Correctamente"),
+           this.getCuentas()
+         } else {
+           this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
+         }
+       })
+       .catch((error) => (console.log(error)));
     },
 
     editCuenta: function (cuenta) {
@@ -189,6 +219,39 @@ import EventBus from '../bus'
       this.cuenta_id = cuenta.id,
       this.numero = cuenta.numero,
       this.nombre_banco = cuenta.nombre_banco
+    },
+
+    SnackbarShow(tipo, mensaje) {
+      if (!tipo) return;
+      switch (tipo) {
+        case "error":
+          this.snackbar = {
+            color: "error",
+            timeout: 2500,
+            title: "Error",
+            text: mensaje,
+            visible: true
+          };
+          break;
+        case "success":
+          this.snackbar = {
+            color: "success",
+            timeout: 2500,
+            title: "Listo",
+            text: mensaje,
+            visible: true
+          };
+          break;
+        case "warning":
+          this.snackbar = {
+            color: "warning",
+            timeout: 2500,
+            title: "¡¡¡Advertencia!!!",
+            text: mensaje,
+            visible: true
+          };
+          break;
+      }
     },
     },
 
@@ -201,6 +264,13 @@ import EventBus from '../bus'
           search: '',
           cuentas: [],
           personas: [],
+          snackbar: {
+            color: null,
+            text: null,
+            timeout: 2500,
+            title: null,
+            visible: false
+          },
           cuentaRules: [
             v => !!v || 'Numero de cuenta es Obligatorio',
             v => v.length == 10 || 'La cedula debe tener 10 digitos',
