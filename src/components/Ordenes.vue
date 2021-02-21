@@ -1,6 +1,21 @@
 <template>
   <div>
   <br>
+  <v-snackbar
+    v-model="snackbar.visible"
+    auto-height
+    :color="snackbar.color"
+    :timeout="snackbar.timeout"
+    :top="true">
+      <v-layout align-center pr-4>
+        <v-layout column>
+          <div>
+            <strong>{{ snackbar.title }}</strong>
+          </div>
+          <div>{{ snackbar.text }}</div>
+        </v-layout>
+      </v-layout>
+  </v-snackbar>
   <v-form>
     <v-container>
       <v-row>
@@ -112,7 +127,7 @@ import EventBus from '../bus'
     watch: {
       cantidad: function (cantidad) {
         if (this.tipo == 1 || this.tipo == 3) {
-          this.total = (cantidad - (parseFloat((cantidad) * (this.humedad / 100))).toFixed(2))  * (parseFloat(this.precio / 100).toFixed(2));
+          this.total = (cantidad - parseFloat(cantidad * (this.humedad / 100)).toFixed(2))  * parseFloat(this.precio / 100).toFixed(2);
         } else {
           this.total = cantidad * this.precio;
         }
@@ -120,7 +135,7 @@ import EventBus from '../bus'
       },
       precio: function (precio) {
         if (this.tipo == 1 || this.tipo == 3) {
-          this.total = (this.cantidad - (parseFloat((this.cantidad) * (this.humedad / 100))).toFixed(2))  * (parseFloat(precio / 100).toFixed(2));
+          this.total = (this.cantidad - parseFloat(this.cantidad * (this.humedad / 100)).toFixed(2))  * parseFloat(precio / 100).toFixed(2);
         } else {
           this.total = precio * this.cantidad;
         }
@@ -128,7 +143,7 @@ import EventBus from '../bus'
       },
       humedad: function (humedad) {
         if (this.tipo == 1 || this.tipo == 3) {
-          this.total = (this.cantidad - (parseFloat((this.cantidad) * (humedad / 100))).toFixed(2))  * (parseFloat(this.precio / 100).toFixed(2));
+          this.total = (this.cantidad - parseFloat(this.cantidad * (humedad / 100)).toFixed(2))  * parseFloat(this.precio / 100).toFixed(2);
         } else {
           this.total = this.precio * this.cantidad;
         }
@@ -209,7 +224,7 @@ import EventBus from '../bus'
             .catch((error) => (console.log(error)))
           }
         } else {
-          alert('Faltan datos.');
+          this.SnackbarShow("warning")
         }
       },
 
@@ -257,6 +272,39 @@ import EventBus from '../bus'
       this.precio = orden.precio,
       this.observacion = orden.observacion
     },
+
+    SnackbarShow(type) {
+      if (!type) return;
+      switch (type) {
+        case "error":
+          this.snackbar = {
+            color: "error",
+            timeout: 2500,
+            title: "Error",
+            text: "Something's gone wrong, sorry.",
+            visible: true
+          };
+          break;
+        case "success":
+          this.snackbar = {
+            color: "success",
+            timeout: 2500,
+            title: "Success",
+            text: "That worked, hoorah.",
+            visible: true
+          };
+          break;
+        case "warning":
+          this.snackbar = {
+            color: "warning",
+            timeout: 2500,
+            title: "¡¡¡Advertencia!!!",
+            text: "Faltan datos por favor revise nuevamente.",
+            visible: true
+          };
+          break;
+      }
+    },
     },
 
     data () {
@@ -273,6 +321,13 @@ import EventBus from '../bus'
           search: '',
           ordenes: [],
           personas: [],
+          snackbar: {
+            color: null,
+            text: null,
+            timeout: 2500,
+            title: null,
+            visible: false
+          },
           tipo_orden_select: [{text:'Compra', value:0},{text:'Venta', value:1}],
           tipo_select: [
             {text:'Latas CCN51', value:0},
