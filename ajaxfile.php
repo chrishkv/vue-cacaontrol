@@ -310,3 +310,36 @@ if($request == 'eliminar_otras_cuenta') {
   echo json_encode($response);
   exit;
 }
+
+// Consulta los registros que soliciten
+if($request == 'consultar_registros') {
+  $fechas = $data->fechas;
+  //se comparan las fechas por que la primera fecha siempre debe ser menos o igual a la segunda fecha
+  if (strtotime($fechas[0]) > strtotime($fechas[1])) {
+    $temporal = $fechas[1];
+    $fechas[1] = $fechas[0];
+    $fechas[0] = $temporal;
+  }
+  $tabla_nombre = $data->tabla_nombre;
+  $persona_id = $data->persona_id;
+  if ($tabla_nombre == 'orden') {
+    $sql = $con->prepare("SELECT * FROM persona INNER JOIN orden ON (orden.persona_id = persona.id) WHERE fecha BETWEEN ? AND ? ORDER BY orden.fecha DESC");
+  } else {
+    $sql = $con->prepare("SELECT * FROM persona INNER JOIN otras_cuentas ON (otras_cuentas.persona_id = persona.id) WHERE fecha BETWEEN ? AND ? ORDER BY otras_cuentas.fecha DESC");
+  }
+  $sql->bindValue(1,$fechas[0] . " 00:00:00",PDO::PARAM_STR);
+  $sql->bindValue(2,$fechas[1] . " 23:59:59",PDO::PARAM_STR);
+  $sql->execute();
+
+  $tipos = ['Latas CCN51','Seco CCN51 lbs','Latas Nacional','Seco Nacional','Latas Monilla'];
+  $response = array();
+  while($row=$sql->fetch(PDO::FETCH_ASSOC)) {
+    $row['tipo_orden'] = $row['tipo_orden_id'] ? 'Venta' : 'Compra';
+    if ($tabla_nombre == 'orden')
+      $row['tipo'] = $tipos[$row['tipo']];
+    $response[] = $row;
+  }
+
+  echo json_encode($response);
+  exit;
+}

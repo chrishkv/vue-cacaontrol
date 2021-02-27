@@ -18,7 +18,7 @@
       Cuentas
     </v-tab>
     <v-tab ripple>
-      Resportes
+      Reportes
     </v-tab>
     <v-tab-item>
         <Ordenes/>
@@ -40,7 +40,7 @@
     </v-tab-item>
     <v-tab-item>
       <v-card flat>
-        <h1>Resporte</h1>
+        <Reportes/>
       </v-card>
     </v-tab-item>
     </v-tabs>
@@ -52,6 +52,7 @@ import Ordenes from './Ordenes.vue';
 import Personas from './Personas.vue';
 import Cuentas from './Cuentas.vue';
 import OtrasCuentas from './OtrasCuentas.vue';
+import Reportes from './Reportes.vue';
 
 export default {
   name: 'Principal',
@@ -60,7 +61,8 @@ export default {
     Ordenes,
     Personas,
     Cuentas,
-    OtrasCuentas
+    OtrasCuentas,
+    Reportes
   },
 
   data: () => ({
