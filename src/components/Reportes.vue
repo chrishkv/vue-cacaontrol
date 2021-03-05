@@ -31,6 +31,10 @@
         </v-col>
 
         <v-col cols="12" sm="2">
+          <v-select v-show="tabla_nombre=='orden'" :items="tipo_select" filled label="Tipo" v-model="tipo_id" item-value="value" background-color="#AFEEEE"></v-select>
+        </v-col>
+
+        <v-col cols="12" sm="2">
           <v-btn v-on:click="buscarRegistros" color="primary" dark large>Consultar</v-btn>
         </v-col>
 
@@ -69,11 +73,11 @@
         <tr v-for="registro in registros" v-bind:key="registro">
           <td>{{registro.nombre}}</td>
           <td>{{registro.cedula}}</td>
+          <td>{{registro.tipo_orden}}</td>
           <td>{{registro.tipo}}</td>
-          <td>{{registro.cantidad}}</td>
+          <td>{{registro.cantidad}}&nbsp;lb</td>
           <td>{{registro.humedad}}&nbsp;%</td>
           <td>{{registro.precio}}</td>
-          <td>{{registro.cantidad}}&nbsp;lb</td>
           <td>{{registro.total}}</td>
           <td>{{registro.fecha}}</td>
         </tr>
@@ -127,6 +131,7 @@ import moment from 'moment'
             request: 'consultar_registros',
             tabla_nombre: this.tabla_nombre,
             tipo_orden_id: this.tipo_orden_id,
+            tipo_id: this.tipo_id,
             fechas: this.dates
            })
            .then(response => {
@@ -198,10 +203,19 @@ import moment from 'moment'
       return {
         dates: [moment(String(new Date())).subtract(30, 'days').format('YYYY-MM-DD'), moment(String(new Date())).format('YYYY-MM-DD')],
         tipo_orden_id:"",
+        tipo_id:"",
         tabla_nombre:'orden',
         registros:[],
         tipo_orden_select: [{text:'Todo', value:""},{text:'Compra', value:0},{text:'Venta', value:1}],
         tabla_select:[{text:'Ordenes', value:'orden'},{text:'Otras Ordenes', value:'otras_cuentas'}],
+        tipo_select: [
+          {text:'Todo', value:""},
+          {text:'Latas CCN51', value:0},
+          {text:'Seco CCN51', value:1},
+          {text:'Latas Nacional', value:2},
+          {text:'Seco Nacional', value:3},
+          {text:'Latas Monilla', value:4},
+        ],
         snackbar: {
           color: null,
           text: null,

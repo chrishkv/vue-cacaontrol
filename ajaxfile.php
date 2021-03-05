@@ -328,7 +328,9 @@ if($request == 'consultar_registros') {
   } else {
     $query .= "SELECT * FROM persona INNER JOIN otras_cuentas ON (otras_cuentas.persona_id = persona.id) WHERE fecha BETWEEN :fecha_desde AND :fecha_hasta";
   }
-  if ($tipo_orden_id = $data->tipo_orden_id) {
+  //Se asignan las condiciones de busqueda
+  $tipo_orden_id = $data->tipo_orden_id;
+  if ($tipo_orden_id >= 0) {
     $query .= " AND tipo_orden_id = :tipo_orden_id";
   }
   $query .= " ORDER BY fecha DESC";
@@ -336,7 +338,7 @@ if($request == 'consultar_registros') {
   //Se asignan los parametros de busqueda
   $sql->bindValue(':fecha_desde',$fechas[0] . " 00:00:00",PDO::PARAM_STR);
   $sql->bindValue(':fecha_hasta',$fechas[1] . " 23:59:59",PDO::PARAM_STR);
-  if ($tipo_orden_id) {
+  if ($tipo_orden_id >= 0) {
     $sql->bindValue(':tipo_orden_id',$tipo_orden_id,PDO::PARAM_INT);
   }
   $sql->execute();
