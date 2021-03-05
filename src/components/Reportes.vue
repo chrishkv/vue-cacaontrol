@@ -16,30 +16,70 @@
       </v-layout>
   </v-snackbar>
   <v-form>
-    <v-container>
+    <v-container fluid>
       <v-row>
         <v-col cols="12" sm="3">
             <v-date-picker v-model="dates" range></v-date-picker>
         </v-col>
 
         <v-col cols="12" sm="2">
-          <v-select :items="tabla_select" filled label="Selección Orden" v-model="tabla_nombre" item-value="value" v-on:change="cambiarTipoOrden();buscarRegistros();" background-color="#AFEEEE"></v-select>
+          <v-row>
+            <v-col cols="12" sm="12">
+              <v-select
+                :items="tabla_select"
+                filled
+                label="Selección Orden"
+                v-model="tabla_nombre"
+                item-value="value"
+                v-on:change="cambiarTipoOrden();buscarRegistros();"
+                background-color="#AFEEEE">
+              </v-select>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col cols="12" sm="12">
+              <v-select :items="sede_select" filled label="Sede" v-model="sede_id" item-value="value" background-color="#AFEEEE"></v-select>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col cols="12" sm="12">
+              <v-btn v-on:click="buscarRegistros" color="primary" dark large>Consultar</v-btn>
+            </v-col>
+          </v-row>
         </v-col>
 
         <v-col cols="12" sm="2">
-          <v-select :items="tipo_orden_select" filled label="Tipo de Orden" v-model="tipo_orden_id" item-value="value" background-color="#AFEEEE"></v-select>
+          <v-row>
+            <v-col cols="12" sm="12">
+              <v-select :items="tipo_orden_select" filled label="Tipo de Orden" v-model="tipo_orden_id" item-value="value" background-color="#AFEEEE"></v-select>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col cols="12" sm="12">
+              <v-autocomplete
+                label="Nombre y Apellido"
+                clearable                
+                filled
+                v-model="persona_id"
+                item-value="id"
+                item-text="nombre"
+                :items="personas"
+                background-color="#AFEEEE"
+              ></v-autocomplete>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col cols="12" sm="2">
+              <img class="clickeable_icon" name="Generar PDF" src="img/adobe_pdf_document.ico" :height="45" :width="45" cursor="pointer" v-on:click="generatePdf"/>
+            </v-col>
+            <v-col cols="12" sm="2">
+              <img class="clickeable_icon" name="Generar Excel" src="img/excel.ico" :height="45" :width="45" cursor="pointer" v-on:click="generatePdf"/>
+            </v-col>
+          </v-row>
         </v-col>
 
         <v-col cols="12" sm="2">
           <v-select v-show="tabla_nombre=='orden'" :items="tipo_select" filled label="Tipo" v-model="tipo_id" item-value="value" background-color="#AFEEEE"></v-select>
-        </v-col>
-
-        <v-col cols="12" sm="2">
-          <v-btn v-on:click="buscarRegistros" color="primary" dark large>Consultar</v-btn>
-        </v-col>
-
-        <v-col cols="12" sm="1">
-          <img class="clickeable_icon" name="Generar PDF" src="img/adobe_pdf_document.ico" :height="45" :width="45" cursor="pointer" v-on:click="generatePdf"/>
         </v-col>
       </v-row>
     </v-container>
@@ -121,8 +161,19 @@
 import axios from 'axios'
 import jsPDF from 'jspdf'
 import moment from 'moment'
+import EventBus from '../bus'
 
   export default {
+    created: function() {
+        EventBus.$on('add-persona', (item) => {
+            this.personas.unshift({id:item[1], nombre:item[0]})
+        })
+    },
+
+    mounted() {
+      this.getPersonas();
+    },
+
     methods: {
       buscarRegistros () {
         console.log('buscarRegistros');
@@ -132,6 +183,8 @@ import moment from 'moment'
             tabla_nombre: this.tabla_nombre,
             tipo_orden_id: this.tipo_orden_id,
             tipo_id: this.tipo_id,
+            persona_id: this.persona_id,
+            sede_id: this.sede_id,
             fechas: this.dates
            })
            .then(response => {
@@ -197,16 +250,28 @@ import moment from 'moment'
           this.SnackbarShow("warning", "Debe seleccionar correctamente las fechas.")
         }
       },
+
+      getPersonas: function() {
+        axios.post('./ajaxfile.php', {
+          request: 'consulta_personas_select',
+         })
+         .then(response => (this.personas = response.data))
+         .catch((error) => (console.log(error)));
+     },
     },
 
     data () {
       return {
+        persona_id:"",
+        personas: [],
+        sede_id:"",
         dates: [moment(String(new Date())).subtract(30, 'days').format('YYYY-MM-DD'), moment(String(new Date())).format('YYYY-MM-DD')],
         tipo_orden_id:"",
         tipo_id:"",
         tabla_nombre:'orden',
         registros:[],
         tipo_orden_select: [{text:'Todo', value:""},{text:'Compra', value:0},{text:'Venta', value:1}],
+        sede_select: [{text:'Todo', value:""},{text:'Quera', value:0},{text:'Rio Negro', value:1},{text:'Machala', value:2},{text:'Guayaquil', value:3}],
         tabla_select:[{text:'Ordenes', value:'orden'},{text:'Otras Ordenes', value:'otras_cuentas'}],
         tipo_select: [
           {text:'Todo', value:""},

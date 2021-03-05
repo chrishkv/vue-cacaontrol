@@ -16,8 +16,8 @@
       </v-layout>
   </v-snackbar>
   <v-form>
-    <v-container>
-      <v-row>
+    <v-container fluid>
+      <v-row align="center" justify="center">
         <v-col cols="12" sm="2">
           <v-select :items="tipo_select" filled label="Tipo" v-model="tipo" item-value="value" background-color="#AFEEEE"></v-select>
         </v-col>
@@ -48,7 +48,7 @@
           <v-text-field v-show="this.tipo == 1 || this.tipo == 3" v-model="humedad" filled type="number" label="% Humedad" :rules="humedadRules" background-color="#AFEEEE"></v-text-field>
         </v-col>
       </v-row>
-      <v-row>
+      <v-row align="center" justify="center">
         <v-col cols="12" sm="2">
           <v-text-field v-model="precio" filled type="number" label="Precio" :rules="numberRules" background-color="#AFEEEE" required></v-text-field>
         </v-col>
@@ -84,7 +84,7 @@
         :footer-props="{
           itemsPerPageText: 'Filas por página:',
           itemsPerPageAllText: 'Todos',
-          itemsPerPageOptions: [20,50,100,-1],          
+          itemsPerPageOptions: [20,50,100,-1],
         }"
       >
       <template v-slot:item.actions="{ item }">
