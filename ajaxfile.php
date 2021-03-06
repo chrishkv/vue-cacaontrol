@@ -15,12 +15,14 @@ if($request == 'consulta_orden'){
   $sql->execute();
   $response = array();
   $tipos = ['Latas CCN51','Seco CCN51 lbs','Latas Nacional','Seco Nacional','Latas Monilla'];
+  $sedes = ['Quera', 'Rio Negro', 'Machala', 'Guayaquil'];
 
   while($row=$sql->fetch(PDO::FETCH_ASSOC)){
     $row['tipo_orden_id'] = $row['tipo_orden_id'] ? 'Venta' : 'Compra';
     $row['nombre'] = $row['nombre'];
     $row['tipo'] = $tipos[$row['tipo']];
     $row['cantidad'] = $row['cantidad'] . ' lb';
+    $row['sede_nombre'] = $sedes[$row['sede_id']];
     $response[] = $row;
   }
 
@@ -30,9 +32,10 @@ if($request == 'consulta_orden'){
 
 // insertar en la tabla Orden
 if($request == 'insertar_orden'){
-  $sql = $con->prepare("INSERT INTO orden(persona_id,tipo_orden_id,tipo,cantidad,humedad,precio,total,observacion,fecha) VALUES (?,?,?,?,?,?,?,?,?)");
+  $sql = $con->prepare("INSERT INTO orden(persona_id,tipo_orden_id,sede_id,tipo,cantidad,humedad,precio,total,observacion,fecha) VALUES (?,?,?,?,?,?,?,?,?,?)");
   $persona_id = $data->persona_id;
   $tipo_orden_id = $data->tipo_orden_id;
+  $sede_id = $data->sede_id;
   $tipo = $data->tipo;
   $cantidad = $data->cantidad;
   $humedad = $data->humedad?:null;
@@ -43,13 +46,14 @@ if($request == 'insertar_orden'){
 
   $sql->bindValue(1,$persona_id,PDO::PARAM_INT);
   $sql->bindValue(2,$tipo_orden_id,PDO::PARAM_INT);
-  $sql->bindValue(3,$tipo,PDO::PARAM_INT);
-  $sql->bindValue(4,$cantidad,PDO::PARAM_STR);
-  $sql->bindValue(5,$humedad,PDO::PARAM_INT);
-  $sql->bindValue(6,$precio,PDO::PARAM_STR);
-  $sql->bindValue(7,$total,PDO::PARAM_STR);
-  $sql->bindValue(8,$observacion,PDO::PARAM_STR);
-  $sql->bindValue(9,$fecha,PDO::PARAM_STR);
+  $sql->bindValue(3,$sede_id,PDO::PARAM_INT);
+  $sql->bindValue(4,$tipo,PDO::PARAM_INT);
+  $sql->bindValue(5,$cantidad,PDO::PARAM_STR);
+  $sql->bindValue(6,$humedad,PDO::PARAM_INT);
+  $sql->bindValue(7,$precio,PDO::PARAM_STR);
+  $sql->bindValue(8,$total,PDO::PARAM_STR);
+  $sql->bindValue(9,$observacion,PDO::PARAM_STR);
+  $sql->bindValue(10,$fecha,PDO::PARAM_STR);
   $result = $sql->execute();
   //Devuelve el id del ultimo registro ingresado
   $response= $result ? $con->lastInsertId() : false;
@@ -60,10 +64,11 @@ if($request == 'insertar_orden'){
 
 // editar en la tabla Orden
 if($request == 'editar_orden') {
-  $sql = $con->prepare("UPDATE orden SET persona_id=?,tipo_orden_id=?,tipo=?,cantidad=?,humedad=?,precio=?,total=?,observacion=? WHERE id=?");
+  $sql = $con->prepare("UPDATE orden SET persona_id=?,tipo_orden_id=?,sede_id=?,tipo=?,cantidad=?,humedad=?,precio=?,total=?,observacion=? WHERE id=?");
   $orden_id = $data->orden_id;
   $persona_id = $data->persona_id;
   $tipo_orden_id = $data->tipo_orden_id;
+  $sede_id = $data->sede_id;
   $tipo = $data->tipo;
   $cantidad = $data->cantidad;
   $humedad = $data->humedad?:null;
@@ -73,13 +78,14 @@ if($request == 'editar_orden') {
 
   $sql->bindValue(1,$persona_id,PDO::PARAM_INT);
   $sql->bindValue(2,$tipo_orden_id,PDO::PARAM_INT);
-  $sql->bindValue(3,$tipo,PDO::PARAM_INT);
-  $sql->bindValue(4,$cantidad,PDO::PARAM_STR);
-  $sql->bindValue(5,$humedad,PDO::PARAM_INT);
-  $sql->bindValue(6,$precio,PDO::PARAM_STR);
-  $sql->bindValue(7,$total,PDO::PARAM_STR);
-  $sql->bindValue(8,$observacion,PDO::PARAM_STR);
-  $sql->bindValue(9,$orden_id,PDO::PARAM_INT);
+  $sql->bindValue(3,$sede_id,PDO::PARAM_INT);
+  $sql->bindValue(4,$tipo,PDO::PARAM_INT);
+  $sql->bindValue(5,$cantidad,PDO::PARAM_STR);
+  $sql->bindValue(6,$humedad,PDO::PARAM_INT);
+  $sql->bindValue(7,$precio,PDO::PARAM_STR);
+  $sql->bindValue(8,$total,PDO::PARAM_STR);
+  $sql->bindValue(9,$observacion,PDO::PARAM_STR);
+  $sql->bindValue(10,$orden_id,PDO::PARAM_INT);
   $response=$sql->execute();
 
   echo json_encode($response);
@@ -323,17 +329,19 @@ if($request == 'consultar_registros') {
   //Se arma el query
   $query = "";
   $tipo_id = "";
+  $sede_id = "";
   $tabla_nombre = $data->tabla_nombre;
   if ($tabla_nombre == 'orden') {
     $query .= "SELECT * FROM persona INNER JOIN orden ON (orden.persona_id = persona.id) WHERE fecha BETWEEN :fecha_desde AND :fecha_hasta";
     $tipo_id = $data->tipo_id;
+    $sede_id = $data->sede_id;
+    $sedes = ['Quera', 'Rio Negro', 'Machala', 'Guayaquil'];
   } else {
     $query .= "SELECT * FROM persona INNER JOIN otras_cuentas ON (otras_cuentas.persona_id = persona.id) WHERE fecha BETWEEN :fecha_desde AND :fecha_hasta";
   }
   //Se asignan las condiciones de busqueda
   $tipo_orden_id = $data->tipo_orden_id;
   $persona_id = $data->persona_id;
-  $sede_id = $data->sede_id;
   if ($tipo_orden_id !== "") {
     $query .= " AND tipo_orden_id = :tipo_orden_id";
   }
@@ -341,7 +349,7 @@ if($request == 'consultar_registros') {
     $query .= " AND persona.id = :persona_id";
   }
   if ($sede_id !== "") {
-    $query .= " AND orden.sede_id = :persona_id";
+    $query .= " AND orden.sede_id = :sede_id";
   }
   if ($tipo_id !== "") {
     $query .= " AND orden.tipo = :tipo_id";
@@ -370,8 +378,10 @@ if($request == 'consultar_registros') {
   $response = array();
   while($row=$sql->fetch(PDO::FETCH_ASSOC)) {
     $row['tipo_orden'] = $row['tipo_orden_id'] ? 'Venta' : 'Compra';
-    if ($tabla_nombre == 'orden')
+    if ($tabla_nombre == 'orden'){
       $row['tipo'] = $tipos[$row['tipo']];
+      $row['sede_nombre'] = $sedes[$row['sede_id']];
+    }
     $response[] = $row;
   }
 

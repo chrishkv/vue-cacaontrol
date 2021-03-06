@@ -38,7 +38,7 @@
           </v-row>
           <v-row>
             <v-col cols="12" sm="12">
-              <v-select :items="sede_select" filled label="Sede" v-model="sede_id" item-value="value" background-color="#AFEEEE"></v-select>
+              <v-select v-show="tabla_nombre=='orden'" :items="sede_select" filled label="Sede" v-model="sede_id" item-value="value" background-color="#AFEEEE"></v-select>
             </v-col>
           </v-row>
           <v-row>
@@ -56,16 +56,7 @@
           </v-row>
           <v-row>
             <v-col cols="12" sm="12">
-              <v-autocomplete
-                label="Nombre y Apellido"
-                clearable                
-                filled
-                v-model="persona_id"
-                item-value="id"
-                item-text="nombre"
-                :items="personas"
-                background-color="#AFEEEE"
-              ></v-autocomplete>
+              <v-select v-show="tabla_nombre=='orden'" :items="tipo_select" filled label="Tipo" v-model="tipo_id" item-value="value" background-color="#AFEEEE"></v-select>
             </v-col>
           </v-row>
           <v-row>
@@ -73,13 +64,22 @@
               <img class="clickeable_icon" name="Generar PDF" src="img/adobe_pdf_document.ico" :height="45" :width="45" cursor="pointer" v-on:click="generatePdf"/>
             </v-col>
             <v-col cols="12" sm="2">
-              <img class="clickeable_icon" name="Generar Excel" src="img/excel.ico" :height="45" :width="45" cursor="pointer" v-on:click="generatePdf"/>
+              <img class="clickeable_icon" name="Generar Excel" src="img/excel.ico" :height="45" :width="45" cursor="pointer" v-on:click="generateExcel"/>
             </v-col>
           </v-row>
         </v-col>
 
         <v-col cols="12" sm="2">
-          <v-select v-show="tabla_nombre=='orden'" :items="tipo_select" filled label="Tipo" v-model="tipo_id" item-value="value" background-color="#AFEEEE"></v-select>
+          <v-autocomplete
+            label="Nombre y Apellido"
+            clearable
+            filled
+            v-model="persona_id"
+            item-value="id"
+            item-text="nombre"
+            :items="personas"
+            background-color="#AFEEEE"
+          ></v-autocomplete>
         </v-col>
       </v-row>
     </v-container>
@@ -91,6 +91,7 @@
           <th>&nbsp;Nombre y Apellido&nbsp;</th>
           <th>&nbsp;Cédula&nbsp;</th>
           <th>&nbsp;Tipo de Orden&nbsp;</th>
+          <th>&nbsp;Sede&nbsp;</th>
           <th>&nbsp;Tipo&nbsp;</th>
           <th>&nbsp;Cantidad&nbsp;</th>
           <th>&nbsp;Humedad&nbsp;</th>
@@ -114,6 +115,7 @@
           <td>{{registro.nombre}}</td>
           <td>{{registro.cedula}}</td>
           <td>{{registro.tipo_orden}}</td>
+          <td>{{registro.sede_nombre}}</td>
           <td>{{registro.tipo}}</td>
           <td>{{registro.cantidad}}&nbsp;lb</td>
           <td>{{registro.humedad}}&nbsp;%</td>
@@ -249,6 +251,10 @@ import EventBus from '../bus'
         } else {
           this.SnackbarShow("warning", "Debe seleccionar correctamente las fechas.")
         }
+      },
+
+      generateExcel: function () {
+        this.SnackbarShow("error", "Funcion aún en construcción")
       },
 
       getPersonas: function() {

@@ -44,11 +44,14 @@
           <v-text-field v-model="cantidad" filled type="number" label="Cantidad" :rules="numberRules" background-color="#AFEEEE" required></v-text-field>
         </v-col>
 
-        <v-col cols="12" sm="2">
+        <v-col cols="12" sm="1">
           <v-text-field v-show="this.tipo == 1 || this.tipo == 3" v-model="humedad" filled type="number" label="% Humedad" :rules="humedadRules" background-color="#AFEEEE"></v-text-field>
         </v-col>
       </v-row>
       <v-row align="center" justify="center">
+        <v-col cols="12" sm="2">
+          <v-select :items="sede_select" filled label="Sede" v-model="sede_id" item-value="value" background-color="#AFEEEE"></v-select>
+        </v-col>
         <v-col cols="12" sm="2">
           <v-text-field v-model="precio" filled type="number" label="Precio" :rules="numberRules" background-color="#AFEEEE" required></v-text-field>
         </v-col>
@@ -57,7 +60,7 @@
           <v-text-field v-model="total" filled label="$ Total" :disabled=true background-color="#AFEEEE"></v-text-field>
         </v-col>
 
-        <v-col cols="12" sm="4">
+        <v-col cols="12" sm="3">
           <v-text-field v-model="observacion" filled label="Observacion" background-color="#AFEEEE"></v-text-field>
         </v-col>
 
@@ -169,6 +172,7 @@ import EventBus from '../bus'
               orden_id: this.orden_id,
               persona_id: this.persona_id,
               tipo_orden_id: this.tipo_orden_id,
+              sede_id: this.sede_id,
               cantidad: this.cantidad,
               humedad: this.humedad,
               tipo: this.tipo,
@@ -184,6 +188,7 @@ import EventBus from '../bus'
                 this.orden_id= '',
                 this.persona_id = '',
                 this.tipo_orden_id = 0,
+                this.sede_id = 0,
                 this.cantidad = '',
                 this.humedad = '',
                 this.tipo = 0,
@@ -201,6 +206,7 @@ import EventBus from '../bus'
               request: 'insertar_orden',
               persona_id: this.persona_id,
               tipo_orden_id: this.tipo_orden_id,
+              sede_id: this.sede_id,
               cantidad: this.cantidad,
               humedad: this.humedad,
               tipo: this.tipo,
@@ -217,6 +223,7 @@ import EventBus from '../bus'
                   nombre: this.personas.find((item)=>{return item.id == this.persona_id}).nombre,
                   persona_id:this.persona_id,
                   tipo_orden_id: this.tipo_orden_id ? 'Venta' : 'Compra',
+                  sede_nombre: this.sede_select[this.sede_id].text,
                   cantidad: this.cantidad + ' lb',
                   humedad: this.humedad,
                   tipo: this.tipo_select[this.tipo].text,
@@ -228,6 +235,7 @@ import EventBus from '../bus'
                 //Se borra la informacion de las variables
                 this.persona_id = '',
                 this.tipo_orden_id = 0,
+                this.sede_id = 0,
                 this.cantidad = '',
                 this.humedad = '',
                 this.tipo = 0,
@@ -281,7 +289,8 @@ import EventBus from '../bus'
       this.persona_id = orden.persona_id,
       this.orden_id = orden.id,
       this.tipo_orden_id = (orden.tipo_orden_id == 'Compra') ? 0 : 1,
-      this.cantidad = orden.cantidad.match(/\d+/)[0],
+      this.sede_id = parseInt(orden.sede_id),
+      this.cantidad = orden.cantidad.match(/\d+(\.\d+)/)[0],
       this.humedad = orden.humedad,
       this.tipo = this.tipo_array_busqueda.indexOf(orden.tipo),
       this.precio = orden.precio,
@@ -327,6 +336,7 @@ import EventBus from '../bus'
           persona_id:'',
           orden_id:'',
           tipo_orden_id:0,
+          sede_id:0,
           cantidad:'',
           humedad:'',
           tipo:0,
@@ -343,6 +353,7 @@ import EventBus from '../bus'
             title: null,
             visible: false
           },
+          sede_select: [{text:'Quera', value:0},{text:'Rio Negro', value:1},{text:'Machala', value:2},{text:'Guayaquil', value:3}],
           tipo_orden_select: [{text:'Compra', value:0},{text:'Venta', value:1}],
           tipo_select: [
             {text:'Latas CCN51', value:0},
@@ -372,6 +383,7 @@ import EventBus from '../bus'
               value: 'nombre',
             },
             { text: 'Tipo Orden', value: 'tipo_orden_id' },
+            { text: 'Sede', value: 'sede_nombre' },
             { text: 'Cantidad', value: 'cantidad' },
             { text: 'Humedad', value: 'humedad' },
             { text: 'Tipo', value: 'tipo' },
