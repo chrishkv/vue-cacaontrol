@@ -85,8 +85,8 @@
     </v-container>
   </v-form>
   <div ref="tablaHtml">
-    <table>
-      <thead v-if="tabla_nombre=='orden'">
+    <table v-if="tabla_nombre=='orden'">
+      <thead>
         <tr>
           <th>&nbsp;Nombre y Apellido&nbsp;</th>
           <th>&nbsp;Cédula&nbsp;</th>
@@ -100,17 +100,7 @@
           <th>Fecha</th>
         </tr>
       </thead>
-      <thead v-else>
-        <tr>
-          <th>&nbsp;Nombre y Apellido&nbsp;</th>
-          <th>&nbsp;Cédula&nbsp;</th>
-          <th>&nbsp;Tipo de Orden&nbsp;</th>
-          <th>&nbsp;Cantidad&nbsp;</th>
-          <th>&nbsp;Observacion&nbsp;</th>
-          <th>Fecha</th>
-        </tr>
-      </thead>
-      <tbody v-if="tabla_nombre=='orden'">
+      <tbody>
         <tr v-for="registro in registros" v-bind:key="registro">
           <td>{{registro.nombre}}</td>
           <td>{{registro.cedula}}</td>
@@ -123,8 +113,26 @@
           <td>{{registro.total}}</td>
           <td>{{registro.fecha}}</td>
         </tr>
+        <tr>
+          <td colspan="7" style="text-align:right"><strong>Total Cantidad:</strong>&nbsp;</td>
+          <td>{{total_cantidad}}&nbsp;lb</td>
+          <td><strong>Total:</strong>&nbsp;</td>
+          <td>{{total_total}}&nbsp;$</td>
+        </tr>
       </tbody>
-      <tbody v-else>
+    </table>
+    <table v-else>
+      <thead >
+        <tr>
+          <th>&nbsp;Nombre y Apellido&nbsp;</th>
+          <th>&nbsp;Cédula&nbsp;</th>
+          <th>&nbsp;Tipo de Orden&nbsp;</th>
+          <th>&nbsp;Cantidad&nbsp;</th>
+          <th>&nbsp;Observacion&nbsp;</th>
+          <th>Fecha</th>
+        </tr>
+      </thead>
+      <tbody>
         <tr v-for="registro in registros" v-bind:key="registro">
           <td>{{registro.nombre}}</td>
           <td>{{registro.cedula}}</td>
@@ -132,6 +140,10 @@
           <td>{{registro.cantidad}}</td>
           <td>{{registro.observacion}}</td>
           <td>{{registro.fecha}}</td>
+        </tr>
+        <tr>
+          <td colspan="5" style="text-align:right"><strong>Cantidad:</strong>&nbsp;</td>
+          <td>{{total_cantidad}}&nbsp;$</td>
         </tr>
       </tbody>
     </table>
@@ -178,7 +190,6 @@ import EventBus from '../bus'
 
     methods: {
       buscarRegistros () {
-        console.log('buscarRegistros');
         if (this.dates.length == 2) {
           axios.post('./ajaxfile.php', {
             request: 'consultar_registros',
@@ -193,6 +204,11 @@ import EventBus from '../bus'
              this.registros = response.data
              if (this.registros.length == 0)
               this.SnackbarShow("warning", "No hay registros que mostrar.")
+             else {
+               this.total_cantidad = this.registros.reduce((acumulador, actual) => acumulador + parseFloat(actual.cantidad), 0)
+               if (this.tabla_nombre == "orden")
+                  this.total_total = this.registros.reduce((acumulador, actual) => acumulador + parseFloat(actual.total), 0)
+             }
            })
            .catch((error) => (console.log(error)));
          } else {
@@ -268,6 +284,8 @@ import EventBus from '../bus'
 
     data () {
       return {
+        total_cantidad:0,
+        total_total:0,
         persona_id:"",
         personas: [],
         sede_id:"",
