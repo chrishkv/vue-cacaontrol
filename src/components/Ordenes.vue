@@ -378,10 +378,11 @@ import EventBus from '../bus'
           ],
           headers: [
             {
-              text: 'Persona Nombre',
-              align: 'start',
-              value: 'nombre',
+              text: 'Secuencial',
+              align: 'center',
+              value: 'id',
             },
+            {text: 'Persona Nombre',value: 'nombre' },
             { text: 'Tipo Orden', value: 'tipo_orden_id' },
             { text: 'Sede', value: 'sede_nombre' },
             { text: 'Cantidad', value: 'cantidad' },

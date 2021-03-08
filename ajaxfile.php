@@ -142,8 +142,8 @@ if($request == 'insertar_persona'){
   $parcela = $data->parcela?:null;
 
   $sql->bindValue(1,$nombre,PDO::PARAM_STR);
-  $sql->bindValue(2,$cedula,PDO::PARAM_INT);
-  $sql->bindValue(3,$telefono,PDO::PARAM_INT);
+  $sql->bindValue(2,$cedula,PDO::PARAM_STR);
+  $sql->bindValue(3,$telefono,PDO::PARAM_STR);
   $sql->bindValue(4,$mail,PDO::PARAM_STR);
   $sql->bindValue(5,$hectarea,PDO::PARAM_STR);
   $sql->bindValue(6,$direccion,PDO::PARAM_STR);
