@@ -14,7 +14,7 @@ if($request == 'consulta_orden'){
   $sql->bindValue(2,$fecha_hasta,PDO::PARAM_STR);
   $sql->execute();
   $response = array();
-  $tipos = ['Latas CCN51','Seco CCN51 lbs','Latas Nacional','Seco Nacional','Latas Monilla'];
+  $tipos = ['Latas CCN51','Seco CCN51','Latas Nacional','Seco Nacional','Latas Monilla'];
   $sedes = ['Quera', 'Rio Negro', 'Machala', 'Guayaquil'];
 
   while($row=$sql->fetch(PDO::FETCH_ASSOC)){
@@ -374,7 +374,7 @@ if($request == 'consultar_registros') {
   }
   $sql->execute();
 
-  $tipos = ['Latas CCN51','Seco CCN51 lbs','Latas Nacional','Seco Nacional','Latas Monilla'];
+  $tipos = ['Latas CCN51','Seco CCN51','Latas Nacional','Seco Nacional','Latas Monilla'];
   $response = array();
   while($row=$sql->fetch(PDO::FETCH_ASSOC)) {
     $row['tipo_orden'] = $row['tipo_orden_id'] ? 'Venta' : 'Compra';

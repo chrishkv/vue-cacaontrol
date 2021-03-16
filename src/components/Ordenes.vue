@@ -40,7 +40,7 @@
         </v-card-actions>
 
         <v-card-actions>
-          <v-btn color="primary" text @click="dialog = false">Cerrar</v-btn>
+          <v-btn color="primary" text @click="limpiarTodo">Cerrar</v-btn>
           <v-btn v-on:click="addOrden" color="primary" large>Guardar</v-btn>
         </v-card-actions>
       </v-card>
@@ -62,7 +62,7 @@
       </v-layout>
   </v-snackbar>
   <v-form>
-    <v-container fluid>
+    <v-container fluid>    
       <v-row align="center" justify="center">
         <v-col cols="12" sm="2">
           <v-select :items="tipo_orden_select" filled label="Tipo de Orden" v-model="tipo_orden_id" item-value="value" background-color="#AFEEEE"></v-select>
@@ -187,34 +187,26 @@ import EventBus from '../bus'
         if(this.persona_id != '' && this.revisarOrdenes()) {
           //indica que va a editar
           if(this.orden_id) {
+            let orden_temporal = this.agregar_ordenes[0]
             axios.post('./ajaxfile.php', {
               request: 'editar_orden',
               orden_id: this.orden_id,
               persona_id: this.persona_id,
               tipo_orden_id: this.tipo_orden_id,
               sede_id: this.sede_id,
-              cantidad: this.cantidad,
-              humedad: this.humedad,
-              tipo: this.tipo,
-              precio: this.precio,
-              total: this.total,
-              observacion: this.observacion
+              cantidad: orden_temporal.cantidad,
+              humedad: orden_temporal.humedad,
+              tipo: orden_temporal.tipo,
+              precio: orden_temporal.precio,
+              total: orden_temporal.total,
+              observacion: orden_temporal.observacion
+
             })
             .then((response) => {
               if (response.data) {
                 this.SnackbarShow("success", "Editado Correctamente."),
                 this.getOrdenes(),
-                //Se borra la informacion de las variables
-                this.orden_id= '',
-                this.persona_id = '',
-                this.tipo_orden_id = 0,
-                this.sede_id = 0,
-                this.cantidad = '',
-                this.humedad = '',
-                this.tipo = 0,
-                this.precio = '',
-                this.total = '',
-                this.observacion = ''
+                this.limpiarTodo()
               } else {
                 this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
               }
@@ -266,20 +258,7 @@ import EventBus from '../bus'
               })
               resolve(true)
             }).then(() => {
-              //se cierra el modal
-              this.dialog = false,
-              //Se borra la informacion de las variables
-              this.persona_id = '',
-              this.tipo_orden_id = 0,
-              this.sede_id = 0,
-              this.agregar_ordenes = [{
-                tipo:0,
-                cantidad:'',
-                precio:'',
-                humedad:'',
-                total:'',
-                observacion:''
-              }]
+              this.limpiarTodo()
             })
             Promise.all([guardarTodoPromesa])
           }
@@ -325,11 +304,15 @@ import EventBus from '../bus'
       this.orden_id = orden.id,
       this.tipo_orden_id = (orden.tipo_orden_id == 'Compra') ? 0 : 1,
       this.sede_id = parseInt(orden.sede_id),
-      this.cantidad = orden.cantidad.match(/\d+(\.\d+)/)[0],
-      this.humedad = orden.humedad,
-      this.tipo = this.tipo_array_busqueda.indexOf(orden.tipo),
-      this.precio = orden.precio,
-      this.observacion = orden.observacion
+      this.agregar_ordenes = [{
+        tipo: this.tipo_array_busqueda.indexOf(orden.tipo),
+        cantidad: orden.cantidad.match(/^(\.\d+)|(\d+(\.\d+)?)/)[0],
+        precio: orden.precio,
+        humedad: orden.humedad,
+        total: orden.total,
+        observacion: orden.observacion,
+      }],
+      this.dialog = true
     },
 
     SnackbarShow(tipo, mensaje) {
@@ -378,6 +361,24 @@ import EventBus from '../bus'
 
     revisarOrdenes () {
       return true
+    },
+
+    limpiarTodo () {
+      //se cierra el modal
+      this.dialog = false,
+      //Se borra la informacion de las variables
+      this.orden_id = '',
+      this.persona_id = '',
+      this.tipo_orden_id = 0,
+      this.sede_id = 0,
+      this.agregar_ordenes = [{
+        tipo:0,
+        cantidad:'',
+        precio:'',
+        humedad:'',
+        total:'',
+        observacion:''
+      }]
     },
     },
 
