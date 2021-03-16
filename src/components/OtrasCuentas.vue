@@ -148,7 +148,7 @@ import EventBus from '../bus'
               tipo_orden_id: this.tipo_orden_id,
               cantidad: this.cantidad,
               observacion: this.observacion,
-              fecha: moment(String(new Date())).format('YYYY/MM/DD hh:mm:ss')
+              fecha: moment(String(new Date())).format('YYYY/MM/DD')
             })
             .then((response) => {
               if (response.data) {
@@ -160,7 +160,7 @@ import EventBus from '../bus'
                   tipo_orden_id: this.tipo_orden_id,
                   cantidad: this.cantidad,
                   observacion: this.observacion,
-                  fecha: moment(String(new Date())).format('YYYY/MM/DD hh:mm:ss')
+                  fecha: moment(String(new Date())).format('YYYY/MM/DD')
                 }),
                 //Se borra la informacion de las variables
                 this.otras_cuenta_id = '',

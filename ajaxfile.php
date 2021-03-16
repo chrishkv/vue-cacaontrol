@@ -8,8 +8,8 @@ $request = $data->request;
 // Consulta todos los registros de la tabla orden
 if($request == 'consulta_orden'){
   $sql = $con->prepare("SELECT orden.*, persona.nombre, persona.id as persona_id FROM orden INNER JOIN persona on (orden.persona_id = persona.id) WHERE fecha BETWEEN ? AND ? order by id desc");
-  $fecha_desde=date('Y-m-d',strtotime('-29 days',strtotime("now"))) . " 00:00:00";
-  $fecha_hasta=date("Y-m-d", strtotime("now")) . " 23:59:59";
+  $fecha_desde=date('Y-m-d',strtotime('-29 days',strtotime("now")));
+  $fecha_hasta=date("Y-m-d", strtotime("now"));
   $sql->bindValue(1,$fecha_desde,PDO::PARAM_STR);
   $sql->bindValue(2,$fecha_hasta,PDO::PARAM_STR);
   $sql->execute();
@@ -252,8 +252,8 @@ if($request == 'eliminar_cuenta') {
 // Consulta todos los registros de la tabla otras_cuentas
 if($request == 'consulta_otras_cuenta') {
   $sql = $con->prepare("SELECT otras_cuentas.*, persona.nombre, persona.id as persona_id FROM otras_cuentas INNER JOIN persona on (otras_cuentas.persona_id = persona.id) WHERE fecha BETWEEN ? AND ? order by id desc");
-  $fecha_desde=date('Y-m-d',strtotime('-29 days',strtotime("now"))) . " 00:00:00";
-  $fecha_hasta=date("Y-m-d", strtotime("now")) . " 23:59:59";
+  $fecha_desde=date('Y-m-d',strtotime('-29 days',strtotime("now")));
+  $fecha_hasta=date("Y-m-d", strtotime("now"));
   $sql->bindValue(1,$fecha_desde,PDO::PARAM_STR);
   $sql->bindValue(2,$fecha_hasta,PDO::PARAM_STR);
   $sql->execute();
@@ -358,8 +358,8 @@ if($request == 'consultar_registros') {
   $query .= " ORDER BY fecha DESC";
   $sql = $con->prepare($query);
   //Se asignan los parametros de busqueda
-  $sql->bindValue(':fecha_desde',$fechas[0] . " 00:00:00",PDO::PARAM_STR);
-  $sql->bindValue(':fecha_hasta',$fechas[1] . " 23:59:59",PDO::PARAM_STR);
+  $sql->bindValue(':fecha_desde',$fechas[0],PDO::PARAM_STR);
+  $sql->bindValue(':fecha_hasta',$fechas[1],PDO::PARAM_STR);
   if ($tipo_orden_id !== "") {
     $sql->bindValue(':tipo_orden_id',$tipo_orden_id,PDO::PARAM_INT);
   }

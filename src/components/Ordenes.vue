@@ -239,10 +239,10 @@ import EventBus from '../bus'
                   precio: orden.precio,
                   total: orden.total,
                   observacion: orden.observacion,
-                  fecha: moment(String(new Date())).format('YYYY/MM/DD hh:mm:ss')
+                  fecha: moment(String(new Date())).format('YYYY/MM/DD')
                 })
                 .then((response) => {
-                  if (response.data) {                    
+                  if (response.data) {
                     this.SnackbarShow("success", "Guardado Correctamente."),
                     this.ordenes.unshift({
                       id: response.data,
