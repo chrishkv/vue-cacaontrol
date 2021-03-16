@@ -70,48 +70,62 @@
         </v-col>
 
         <v-col cols="12" sm="2">
-          <v-autocomplete
-            label="Nombre y Apellido"
-            clearable
-            filled
-            v-model="persona_id"
-            item-value="id"
-            item-text="nombre"
-            :items="personas"
-            background-color="#AFEEEE"
-          ></v-autocomplete>
+          <v-row>
+            <v-col cols="12" sm="12">
+            <v-autocomplete
+              label="Nombre y Apellido"
+              clearable
+              filled
+              v-model="persona_id"
+              item-value="id"
+              item-text="nombre"
+              :items="personas"
+              background-color="#AFEEEE"
+            ></v-autocomplete>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col cols="12" sm="12">
+              <v-checkbox
+                v-show="tabla_nombre=='orden'"
+                v-model="check_direccion"
+                :label="`Mostrar Dirección`"
+              ></v-checkbox>
+            </v-col>
+          </v-row>
         </v-col>
       </v-row>
     </v-container>
   </v-form>
   <div ref="tablaHtml">
-    <table v-if="tabla_nombre=='orden'">
+    <table v-if="tabla_nombre=='orden' && !persona_id">
       <thead>
         <tr>
-          <th>&nbsp;Nombre y Apellido&nbsp;</th>
+          <th>Fecha</th>
           <th>&nbsp;Cédula&nbsp;</th>
-          <th>&nbsp;Tipo de Orden&nbsp;</th>
+          <th>&nbsp;Nombre y Apellido&nbsp;</th>
           <th>&nbsp;Sede&nbsp;</th>
-          <th>&nbsp;Tipo&nbsp;</th>
-          <th>&nbsp;Cantidad&nbsp;</th>
+          <th>&nbsp;Tipo de Orden&nbsp;</th>
+          <th>&nbsp;Tipo de Cacao&nbsp;</th>
           <th>&nbsp;Humedad&nbsp;</th>
           <th>&nbsp;Precio&nbsp;</th>
+          <th>&nbsp;Cantidad&nbsp;</th>
           <th>&nbsp;Total&nbsp;</th>
-          <th>Fecha</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="registro in registros" v-bind:key="registro">
-          <td>{{registro.nombre}}</td>
-          <td>{{registro.cedula}}</td>
-          <td>{{registro.tipo_orden}}</td>
-          <td>{{registro.sede_nombre}}</td>
-          <td>{{registro.tipo}}</td>
-          <td>{{registro.cantidad}}&nbsp;lb</td>
-          <td>{{registro.humedad}}&nbsp;%</td>
-          <td>{{registro.precio}}</td>
-          <td>{{registro.total}}</td>
           <td>{{registro.fecha}}</td>
+          <td>{{registro.cedula}}</td>
+          <td>{{registro.nombre}}</td>
+          <td>{{registro.sede_nombre}}</td>
+          <td>{{registro.tipo_orden}}</td>
+          <td>{{registro.tipo}}</td>
+          <td>{{registro.humedad}}&nbsp;%</td>
+          <td>{{registro.precio}}&nbsp;$</td>
+          <td>{{registro.cantidad}}&nbsp;lb</td>
+          <td>{{registro.total}}&nbsp;$</td>
+
         </tr>
         <tr>
           <td colspan="7" style="text-align:right"><strong>Total Cantidad:</strong>&nbsp;</td>
@@ -121,6 +135,68 @@
         </tr>
       </tbody>
     </table>
+    <template v-else-if="tabla_nombre=='orden' && persona_id">
+      <table>
+        <tr>
+          <th>Nombre y Apellido</th>
+          <td>{{registros[0].nombre}}</td>
+        </tr>
+        <tr>
+          <th>Cedula</th>
+          <td>{{registros[0].cedula}}</td>
+        </tr>
+        <tr>
+          <th>Telefono</th>
+          <td>{{registros[0].telefono}}</td>
+        </tr>
+      </table>
+      <table v-show="check_direccion">
+        <tr>
+          <th>hectarea</th>
+          <td>{{registros[0].hectarea}}</td>
+        </tr>
+        <tr>
+          <th>Direccion</th>
+          <td>{{registros[0].direccion}}</td>
+        </tr>
+        <tr>
+          <th>Direccion de parcela</th>
+          <td>{{registros[0].parcela}}</td>
+        </tr>
+      </table>
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>&nbsp;Sede&nbsp;</th>
+            <th>&nbsp;Tipo de Orden&nbsp;</th>
+            <th>&nbsp;Tipo de Cacao&nbsp;</th>
+            <th>&nbsp;Humedad&nbsp;</th>
+            <th>&nbsp;Precio&nbsp;</th>
+            <th>&nbsp;Cantidad&nbsp;</th>
+            <th>&nbsp;Total&nbsp;</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="registro in registros" v-bind:key="registro">
+            <td>{{registro.fecha}}</td>
+            <td>{{registro.sede_nombre}}</td>
+            <td>{{registro.tipo_orden}}</td>
+            <td>{{registro.tipo}}</td>
+            <td>{{registro.humedad}}&nbsp;%</td>
+            <td>{{registro.precio}}&nbsp;$</td>
+            <td>{{registro.cantidad}}&nbsp;lb</td>
+            <td>{{registro.total}}&nbsp;$</td>
+          </tr>
+          <tr>
+            <td colspan="5" style="text-align:right"><strong>Total Cantidad:</strong>&nbsp;</td>
+            <td>{{total_cantidad}}&nbsp;lb</td>
+            <td><strong>Total:</strong>&nbsp;</td>
+            <td>{{total_total}}&nbsp;$</td>
+          </tr>
+        </tbody>
+      </table>
+    </template>
     <table v-else>
       <thead >
         <tr>
@@ -169,6 +245,10 @@
       margin-top: 2%;
       margin-right: 5px;
       vertical-align: middle;
+  }
+
+  th, td {
+    padding: 2px;
   }
 </style>
 <script>
@@ -284,6 +364,7 @@ import EventBus from '../bus'
 
     data () {
       return {
+        check_direccion:true,
         total_cantidad:0,
         total_total:0,
         persona_id:"",

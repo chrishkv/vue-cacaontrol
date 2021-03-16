@@ -23,7 +23,7 @@
         </v-col>
 
         <v-col cols="12" sm="2">
-          <v-text-field v-model="cedula" filled label="Cedula" :rules="cedulaRules" background-color="#AFEEEE" required></v-text-field>
+          <v-text-field v-model="cedula" filled label="Cedula / RUC" :rules="cedulaRules" background-color="#AFEEEE" required></v-text-field>
         </v-col>
 
         <v-col cols="12" sm="2">

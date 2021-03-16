@@ -1,5 +1,51 @@
 <template>
   <div>
+  <div class="text-center">
+    <v-dialog v-model="dialog">
+      <v-card>
+        <v-card-title class="headline grey lighten-2">
+          Total General: {{ getTotalOrdenes }}
+          <v-divider vertical class="mx-4"></v-divider>
+          Total Cantidad: {{ getTotalCantidad }}
+        </v-card-title>
+
+        <v-card v-for="(agregar_orden, i) in agregar_ordenes" :key="i">
+          <v-row>
+            <v-col cols="12" sm="3">
+              <v-select :items="tipo_select" filled label="Tipo" v-model="agregar_orden.tipo" item-value="value" background-color="#AFEEEE"></v-select>
+            </v-col>
+            <v-col cols="12" sm="3">
+              <v-text-field v-model="agregar_orden.cantidad" filled type="number" label="Cantidad" :rules="numberRules" background-color="#AFEEEE" required></v-text-field>
+            </v-col>
+            <v-col cols="12" sm="3">
+              <v-text-field v-model="agregar_orden.precio" filled type="number" label="Precio" :rules="numberRules" background-color="#AFEEEE" required></v-text-field>
+            </v-col>
+            <v-col cols="12" sm="2">
+              <v-text-field v-show="agregar_orden.tipo == 1 || agregar_orden.tipo == 3" v-model="agregar_orden.humedad" filled type="number" label="% Humedad" :rules="humedadRules" background-color="#AFEEEE"></v-text-field>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col cols="12" sm="6">
+              <v-text-field v-model="agregar_orden.observacion" filled label="Observacion" background-color="#AFEEEE"></v-text-field>
+            </v-col>
+            <v-col cols="12" sm="2">
+              <v-text-field v-model="agregar_orden.total" filled label="$ Total" :disabled=true background-color="#AFEEEE"></v-text-field>
+            </v-col>
+          </v-row>
+          <v-divider></v-divider>
+        </v-card>
+
+        <v-card-actions class="justify-center">
+          <v-icon color="green darken-2" @click="agregarOtraOrden">mdi-plus-circle</v-icon>
+        </v-card-actions>
+
+        <v-card-actions>
+          <v-btn color="primary" text @click="dialog = false">Cerrar</v-btn>
+          <v-btn v-on:click="addOrden" color="primary" large>Guardar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </div>
   <br>
   <v-snackbar
     v-model="snackbar.visible"
@@ -19,10 +65,6 @@
     <v-container fluid>
       <v-row align="center" justify="center">
         <v-col cols="12" sm="2">
-          <v-select :items="tipo_select" filled label="Tipo" v-model="tipo" item-value="value" background-color="#AFEEEE"></v-select>
-        </v-col>
-
-        <v-col cols="12" sm="2">
           <v-select :items="tipo_orden_select" filled label="Tipo de Orden" v-model="tipo_orden_id" item-value="value" background-color="#AFEEEE"></v-select>
         </v-col>
 
@@ -41,32 +83,9 @@
         </v-col>
 
         <v-col cols="12" sm="2">
-          <v-text-field v-model="cantidad" filled type="number" label="Cantidad" :rules="numberRules" background-color="#AFEEEE" required></v-text-field>
-        </v-col>
-
-        <v-col cols="12" sm="1">
-          <v-text-field v-show="this.tipo == 1 || this.tipo == 3" v-model="humedad" filled type="number" label="% Humedad" :rules="humedadRules" background-color="#AFEEEE"></v-text-field>
-        </v-col>
-      </v-row>
-      <v-row align="center" justify="center">
-        <v-col cols="12" sm="2">
           <v-select :items="sede_select" filled label="Sede" v-model="sede_id" item-value="value" background-color="#AFEEEE"></v-select>
         </v-col>
-        <v-col cols="12" sm="2">
-          <v-text-field v-model="precio" filled type="number" label="Precio" :rules="numberRules" background-color="#AFEEEE" required></v-text-field>
-        </v-col>
-
-        <v-col cols="12" sm="1">
-          <v-text-field v-model="total" filled label="$ Total" :disabled=true background-color="#AFEEEE"></v-text-field>
-        </v-col>
-
-        <v-col cols="12" sm="3">
-          <v-text-field v-model="observacion" filled label="Observacion" background-color="#AFEEEE"></v-text-field>
-        </v-col>
-
-        <v-col cols="12" sm="1">
-          <v-btn v-on:click="addOrden" color="primary" large>Guardar</v-btn>
-        </v-col>
+        <v-btn id="boton_agregar" color="primary" large @click="dialog = true">Agregar</v-btn>
       </v-row>
     </v-container>
   </v-form>
@@ -113,9 +132,13 @@
   </div>
 </template>
 <style scoped>
-  /*.v-text-field__slot {
-    background-color:"#AFEEEE" !important;
-  }*/
+  #boton_agregar {
+    margin-bottom: 30px;
+  }
+
+  .row {
+    padding-left: 10px;
+  }
 </style>
 <script>
 import moment from 'moment'
@@ -134,37 +157,34 @@ import EventBus from '../bus'
       this.getPersonas();
     },
 
-    watch: {
-      cantidad: function (cantidad) {
-        if (this.tipo == 1 || this.tipo == 3) {
-          this.total = (cantidad - parseFloat(cantidad * (this.humedad / 100)).toFixed(2))  * parseFloat(this.precio / 100).toFixed(2);
-        } else {
-          this.total = cantidad * this.precio;
-        }
-        this.total = parseFloat(this.total).toFixed(2);
+    computed : {
+      getTotalOrdenes: function () {
+        let total = parseFloat(this.agregar_ordenes.reduce((acumulador, actual) => acumulador + parseFloat(actual.total), 0)).toFixed(2)
+        return isNaN(total) ? '0.00' : total
       },
-      precio: function (precio) {
-        if (this.tipo == 1 || this.tipo == 3) {
-          this.total = (this.cantidad - parseFloat(this.cantidad * (this.humedad / 100)).toFixed(2))  * parseFloat(precio / 100).toFixed(2);
-        } else {
-          this.total = precio * this.cantidad;
-        }
-        this.total = parseFloat(this.total).toFixed(2);
-      },
-      humedad: function (humedad) {
-        if (this.tipo == 1 || this.tipo == 3) {
-          this.total = (this.cantidad - parseFloat(this.cantidad * (humedad / 100)).toFixed(2))  * parseFloat(this.precio / 100).toFixed(2);
-        } else {
-          this.total = this.precio * this.cantidad;
-        }
-        this.total = parseFloat(this.total).toFixed(2);
+      getTotalCantidad: function () {
+        let cantidad = parseFloat(this.agregar_ordenes.reduce((acumulador, actual) => acumulador + parseFloat(actual.cantidad), 0)).toFixed(2)
+        return isNaN(cantidad) ? '0.00' : cantidad
       }
+    },
+    watch: {
+      agregar_ordenes: {
+        handler(val) {
+          val.map((orden) => {
+            if (orden.tipo == 1 || orden.tipo == 3) {
+              orden.total = parseFloat((orden.cantidad - parseFloat(orden.cantidad * (orden.humedad / 100)).toFixed(2)) * parseFloat(orden.precio / 100).toFixed(2)).toFixed(2);
+            } else {
+              orden.total = parseFloat(orden.cantidad * orden.precio).toFixed(2);
+            }
+          })
+        },
+        deep: true
+      },
     },
 
     methods: {
       addOrden: function () {
-        if(this.persona_id != '' && this.cantidad != '' && this.precio != '' &&
-          this.cantidad > 0 && this.precio > 0) {
+        if(this.persona_id != '' && this.revisarOrdenes()) {
           //indica que va a editar
           if(this.orden_id) {
             axios.post('./ajaxfile.php', {
@@ -202,51 +222,66 @@ import EventBus from '../bus'
             .catch((error) => (console.log(error)))
           } else {
             //indica que va a ingresar una orden nueva
-            axios.post('./ajaxfile.php', {
-              request: 'insertar_orden',
-              persona_id: this.persona_id,
-              tipo_orden_id: this.tipo_orden_id,
-              sede_id: this.sede_id,
-              cantidad: this.cantidad,
-              humedad: this.humedad,
-              tipo: this.tipo,
-              precio: this.precio,
-              total: this.total,
-              observacion: this.observacion,
-              fecha: moment(String(new Date())).format('YYYY/MM/DD hh:mm:ss')
-            })
-            .then((response) => {
-              if (response.data) {
-                this.SnackbarShow("success", "Guardado Correctamente."),
-                this.ordenes.unshift({
-                  id: response.data,
-                  nombre: this.personas.find((item)=>{return item.id == this.persona_id}).nombre,
-                  persona_id:this.persona_id,
-                  tipo_orden_id: this.tipo_orden_id ? 'Venta' : 'Compra',
-                  sede_nombre: this.sede_select[this.sede_id].text,
-                  cantidad: this.cantidad + ' lb',
-                  humedad: this.humedad,
-                  tipo: this.tipo_select[this.tipo].text,
-                  precio: this.precio,
-                  total: this.total,
-                  observacion: this.observacion,
+            var guardarTodoPromesa = new Promise((resolve, reject) => {
+              let persona_id_temporal = this.persona_id
+              let tipo_orden_id_temporal = this.tipo_orden_id
+              let sede_id_temporal = this.sede_id
+              //se recorre cada elemento
+              this.agregar_ordenes.forEach((orden) => {
+                axios.post('./ajaxfile.php', {
+                  request: 'insertar_orden',
+                  persona_id: this.persona_id,
+                  tipo_orden_id: this.tipo_orden_id,
+                  sede_id: this.sede_id,
+                  cantidad: orden.cantidad,
+                  humedad: orden.humedad,
+                  tipo: orden.tipo,
+                  precio: orden.precio,
+                  total: orden.total,
+                  observacion: orden.observacion,
                   fecha: moment(String(new Date())).format('YYYY/MM/DD hh:mm:ss')
-                }),
-                //Se borra la informacion de las variables
-                this.persona_id = '',
-                this.tipo_orden_id = 0,
-                this.sede_id = 0,
-                this.cantidad = '',
-                this.humedad = '',
-                this.tipo = 0,
-                this.precio = '',
-                this.total = '',
-                this.observacion = ''
-              } else {
-                this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
-              }
+                })
+                .then((response) => {
+                  if (response.data) {                    
+                    this.SnackbarShow("success", "Guardado Correctamente."),
+                    this.ordenes.unshift({
+                      id: response.data,
+                      nombre: this.personas.find((item)=>{return item.id == persona_id_temporal}).nombre,
+                      persona_id: persona_id_temporal,
+                      tipo_orden_id: tipo_orden_id_temporal ? 'Venta' : 'Compra',
+                      sede_nombre: this.sede_select[sede_id_temporal].text,
+                      cantidad: orden.cantidad + ' lb',
+                      humedad: orden.humedad,
+                      tipo: this.tipo_select[orden.tipo].text,
+                      precio: orden.precio,
+                      total: orden.total,
+                      observacion: orden.observacion,
+                      fecha: moment(String(new Date())).format('YYYY/MM/DD')
+                    })
+                  } else {
+                    this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
+                  }
+                })
+                .catch((error) => (console.log(error), reject()))
+              })
+              resolve(true)
+            }).then(() => {
+              //se cierra el modal
+              this.dialog = false,
+              //Se borra la informacion de las variables
+              this.persona_id = '',
+              this.tipo_orden_id = 0,
+              this.sede_id = 0,
+              this.agregar_ordenes = [{
+                tipo:0,
+                cantidad:'',
+                precio:'',
+                humedad:'',
+                total:'',
+                observacion:''
+              }]
             })
-            .catch((error) => (console.log(error)))
+            Promise.all([guardarTodoPromesa])
           }
         } else {
           this.SnackbarShow("warning", "Faltan algunos datos por favor revise.")
@@ -329,6 +364,21 @@ import EventBus from '../bus'
           break;
       }
     },
+
+    agregarOtraOrden () {
+      this.agregar_ordenes.push({
+        tipo:0,
+        cantidad:'',
+        precio:'',
+        humedad:'',
+        total:'',
+        observacion:''
+      })
+    },
+
+    revisarOrdenes () {
+      return true
+    },
     },
 
     data () {
@@ -337,15 +387,20 @@ import EventBus from '../bus'
           orden_id:'',
           tipo_orden_id:0,
           sede_id:0,
-          cantidad:'',
-          humedad:'',
-          tipo:0,
-          precio:'',
-          total:'',
-          observacion:'',
           search: '',
+          total_total_modal: 0,
+          total_cantidad_modal: 0,
           ordenes: [],
           personas: [],
+          dialog: false,
+          agregar_ordenes: [{
+            tipo:0,
+            cantidad:'',
+            precio:'',
+            humedad:'',
+            total:'',
+            observacion:'',
+          }],
           snackbar: {
             color: null,
             text: null,

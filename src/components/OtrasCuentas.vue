@@ -286,10 +286,11 @@ import EventBus from '../bus'
           ],
           headers:[
             {
-              text: 'Persona Nombre',
-              align: 'start',
-              value: 'nombre',
+              text: 'Secuencial',
+              align: 'center',
+              value: 'id',
             },
+            { text: 'Persona Nombre', value: 'nombre' },
             { text: 'Tipo', value: 'tipo_orden_nombre' },
             { text: '$ Total', value: 'cantidad' },
             { text: 'Observacion', value: 'observacion' },
