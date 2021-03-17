@@ -120,16 +120,17 @@
           <td>{{registro.nombre}}</td>
           <td>{{registro.sede_nombre}}</td>
           <td>{{registro.tipo_orden}}</td>
-          <td>{{registro.tipo}}</td>
-          <td>{{registro.humedad}}&nbsp;%</td>
+          <td>{{registro.tipo_nombre}}</td>
+          <td>{{registro.humedad}}<template v-if="registro.humedad">&nbsp;%</template></td>
           <td>{{registro.precio}}&nbsp;$</td>
-          <td>{{registro.cantidad}}&nbsp;lb</td>
+          <td>{{registro.cantidad}}&nbsp;{{(registro.tipo%2 == 0) ? 'lt' : 'qt'}}</td>
           <td>{{registro.total}}&nbsp;$</td>
-
         </tr>
         <tr>
-          <td colspan="7" style="text-align:right"><strong>Total Cantidad:</strong>&nbsp;</td>
-          <td>{{total_cantidad}}&nbsp;lb</td>
+          <td colspan="5" style="text-align:right"><strong>Total Quintales:</strong>&nbsp;</td>
+          <td>{{total_quintales}}&nbsp;qt</td>
+          <td><strong>Total Latas:</strong>&nbsp;</td>
+          <td>{{total_latas}}&nbsp;lt</td>
           <td><strong>Total:</strong>&nbsp;</td>
           <td>{{total_total}}&nbsp;$</td>
         </tr>
@@ -182,15 +183,17 @@
             <td>{{registro.fecha}}</td>
             <td>{{registro.sede_nombre}}</td>
             <td>{{registro.tipo_orden}}</td>
-            <td>{{registro.tipo}}</td>
-            <td>{{registro.humedad}}&nbsp;%</td>
+            <td>{{registro.tipo_nombre}}</td>
+            <td>{{registro.humedad}}<template v-if="registro.humedad">&nbsp;%</template></td>
             <td>{{registro.precio}}&nbsp;$</td>
-            <td>{{registro.cantidad}}&nbsp;lb</td>
+            <td>{{registro.cantidad}}{{(registro.tipo % 2 == 0) ? ' lt' : ' qt'}}</td>
             <td>{{registro.total}}&nbsp;$</td>
           </tr>
           <tr>
-            <td colspan="5" style="text-align:right"><strong>Total Cantidad:</strong>&nbsp;</td>
-            <td>{{total_cantidad}}&nbsp;lb</td>
+            <td colspan="3" style="text-align:right"><strong>Total Quintales:</strong>&nbsp;</td>
+            <td>{{total_latas}}&nbsp;qt</td>
+            <td><strong>Total Latas:</strong>&nbsp;</td>
+            <td>{{total_latas}}&nbsp;lt</td>
             <td><strong>Total:</strong>&nbsp;</td>
             <td>{{total_total}}&nbsp;$</td>
           </tr>
@@ -219,7 +222,7 @@
         </tr>
         <tr>
           <td colspan="5" style="text-align:right"><strong>Cantidad:</strong>&nbsp;</td>
-          <td>{{total_cantidad}}&nbsp;$</td>
+          <td>{{total_latas}}</td>
         </tr>
       </tbody>
     </table>
@@ -284,10 +287,15 @@ import EventBus from '../bus'
              this.registros = response.data
              if (this.registros.length == 0)
               this.SnackbarShow("warning", "No hay registros que mostrar.")
-             else {
-               this.total_cantidad = this.registros.reduce((acumulador, actual) => acumulador + parseFloat(actual.cantidad), 0)
+             else if (this.tabla_nombre == 'orden') {
+               let registro_latas_temporal = this.registros.filter(registro => registro.tipo % 2 == 0)
+               this.total_latas = parseFloat(registro_latas_temporal.reduce((acumulador, actual) => acumulador + parseFloat(actual.cantidad), 0)).toFixed(2)
+               let registro_quintales_temporal = this.registros.filter(registro => registro.tipo % 2 != 0)
+               this.total_quintales = parseFloat(registro_quintales_temporal.reduce((acumulador, actual) => acumulador + parseFloat(actual.cantidad), 0)).toFixed(2)
                if (this.tabla_nombre == "orden")
-                  this.total_total = this.registros.reduce((acumulador, actual) => acumulador + parseFloat(actual.total), 0)
+                  this.total_total = parseFloat(this.registros.reduce((acumulador, actual) => acumulador + parseFloat(actual.total), 0)).toFixed(2)
+             } else {
+               this.total_latas = parseFloat(this.registros.reduce((acumulador, actual) => acumulador + parseFloat(actual.total), 0)).toFixed(2)
              }
            })
            .catch((error) => (console.log(error)));
@@ -365,7 +373,8 @@ import EventBus from '../bus'
     data () {
       return {
         check_direccion:true,
-        total_cantidad:0,
+        total_latas:0,
+        total_quintales:0,
         total_total:0,
         persona_id:"",
         personas: [],

@@ -18,10 +18,11 @@ if($request == 'consulta_orden'){
   $sedes = ['Quera', 'Rio Negro', 'Machala', 'Guayaquil'];
 
   while($row=$sql->fetch(PDO::FETCH_ASSOC)){
+    $diminutivo = ($row['tipo'] % 2 == 0) ? ' lt' : ' qt';
     $row['tipo_orden_id'] = $row['tipo_orden_id'] ? 'Venta' : 'Compra';
     $row['nombre'] = $row['nombre'];
     $row['tipo'] = $tipos[$row['tipo']];
-    $row['cantidad'] = $row['cantidad'] . ' lb';
+    $row['cantidad'] = $row['cantidad'] . $diminutivo;
     $row['sede_nombre'] = $sedes[$row['sede_id']];
     $response[] = $row;
   }
@@ -379,7 +380,7 @@ if($request == 'consultar_registros') {
   while($row=$sql->fetch(PDO::FETCH_ASSOC)) {
     $row['tipo_orden'] = $row['tipo_orden_id'] ? 'Venta' : 'Compra';
     if ($tabla_nombre == 'orden'){
-      $row['tipo'] = $tipos[$row['tipo']];
+      $row['tipo_nombre'] = $tipos[$row['tipo']];
       $row['sede_nombre'] = $sedes[$row['sede_id']];
     }
     $response[] = $row;

@@ -62,7 +62,7 @@
       </v-layout>
   </v-snackbar>
   <v-form>
-    <v-container fluid>    
+    <v-container fluid>
       <v-row align="center" justify="center">
         <v-col cols="12" sm="2">
           <v-select :items="tipo_orden_select" filled label="Tipo de Orden" v-model="tipo_orden_id" item-value="value" background-color="#AFEEEE"></v-select>
@@ -235,15 +235,16 @@ import EventBus from '../bus'
                 })
                 .then((response) => {
                   if (response.data) {
-                    this.SnackbarShow("success", "Guardado Correctamente."),
+                    this.SnackbarShow("success", "Guardado Correctamente.")
+                    let diminutivo = (orden.tipo % 2 == 0) ? ' lt' : ' qt'
                     this.ordenes.unshift({
                       id: response.data,
                       nombre: this.personas.find((item)=>{return item.id == persona_id_temporal}).nombre,
                       persona_id: persona_id_temporal,
                       tipo_orden_id: tipo_orden_id_temporal ? 'Venta' : 'Compra',
                       sede_nombre: this.sede_select[sede_id_temporal].text,
-                      cantidad: orden.cantidad + ' lb',
-                      humedad: orden.humedad,
+                      cantidad: orden.cantidad + diminutivo,
+                      humedad: orden.humedad + ' %',
                       tipo: this.tipo_select[orden.tipo].text,
                       precio: orden.precio,
                       total: orden.total,
