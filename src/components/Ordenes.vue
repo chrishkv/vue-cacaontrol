@@ -4,9 +4,11 @@
     <v-dialog v-model="dialog">
       <v-card>
         <v-card-title class="headline grey lighten-2">
-          Total General: {{ getTotalOrdenes }}
+          Total General: {{ getTotalOrdenes }}&nbsp;$
           <v-divider vertical class="mx-4"></v-divider>
-          Total Cantidad: {{ getTotalCantidad }}
+          Total Latas: {{ getTotalLatas }}&nbsp;lt
+          <v-divider vertical class="mx-4"></v-divider>
+          Total Quintales: {{ getTotalQuintales }}&nbsp;qt
         </v-card-title>
 
         <v-card v-for="(agregar_orden, i) in agregar_ordenes" :key="i">
@@ -162,8 +164,16 @@ import EventBus from '../bus'
         let total = parseFloat(this.agregar_ordenes.reduce((acumulador, actual) => acumulador + parseFloat(actual.total), 0)).toFixed(2)
         return isNaN(total) ? '0.00' : total
       },
-      getTotalCantidad: function () {
-        let cantidad = parseFloat(this.agregar_ordenes.reduce((acumulador, actual) => acumulador + parseFloat(actual.cantidad), 0)).toFixed(2)
+
+      getTotalLatas: function () {
+        let registro_latas_temporal = this.agregar_ordenes.filter(registro => registro.tipo % 2 == 0)
+        let cantidad = parseFloat(registro_latas_temporal.reduce((acumulador, actual) => acumulador + parseFloat(actual.cantidad), 0)).toFixed(2)
+        return isNaN(cantidad) ? '0.00' : cantidad
+      },
+
+      getTotalQuintales: function () {
+        let registro_quintales_temporal = this.agregar_ordenes.filter(registro => registro.tipo % 2 != 0)
+        let cantidad = parseFloat(registro_quintales_temporal.reduce((acumulador, actual) => acumulador + parseFloat(actual.cantidad), 0)).toFixed(2)
         return isNaN(cantidad) ? '0.00' : cantidad
       }
     },
