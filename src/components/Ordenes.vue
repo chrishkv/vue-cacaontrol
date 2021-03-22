@@ -87,7 +87,7 @@
         <v-col cols="12" sm="2">
           <v-select :items="sede_select" filled label="Sede" v-model="sede_id" item-value="value" background-color="#AFEEEE"></v-select>
         </v-col>
-        <v-btn id="boton_agregar" color="primary" large @click="dialog = true">Agregar</v-btn>
+        <v-btn v-show="persona_id" id="boton_agregar" color="primary" large @click="dialog = true">Agregar</v-btn>
       </v-row>
     </v-container>
   </v-form>
