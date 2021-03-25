@@ -64,7 +64,12 @@
               <img class="clickeable_icon" name="Generar PDF" src="img/adobe_pdf_document.ico" :height="45" :width="45" cursor="pointer" v-on:click="generatePdf"/>
             </v-col>
             <v-col cols="12" sm="2">
-              <img class="clickeable_icon" name="Generar Excel" src="img/excel.ico" :height="45" :width="45" cursor="pointer" v-on:click="generateExcel"/>
+                <download-excel
+                  :data="registros"
+                  :fields="json_fields"
+                  name="cacaontrol">
+                  <img src="img/excel.ico" :height="45" :width="45" class="clickeable_icon" cursor="pointer"/>
+                </download-excel>
             </v-col>
           </v-row>
         </v-col>
@@ -259,13 +264,17 @@ import axios from 'axios'
 import jsPDF from 'jspdf'
 import moment from 'moment'
 import EventBus from '../bus'
+import Vue from "vue";
+import JsonExcel from "vue-json-excel";
+
+Vue.component("downloadExcel", JsonExcel);
 
   export default {
     created: function() {
         EventBus.$on('add-persona', (item) => {
             this.personas.unshift({id:item[1], nombre:item[0]})
         })
-    },
+    },    
 
     mounted() {
       this.getPersonas();
@@ -295,7 +304,7 @@ import EventBus from '../bus'
                if (this.tabla_nombre == "orden")
                   this.total_total = parseFloat(this.registros.reduce((acumulador, actual) => acumulador + parseFloat(actual.total), 0)).toFixed(2)
              } else {
-               this.total_latas = parseFloat(this.registros.reduce((acumulador, actual) => acumulador + parseFloat(actual.total), 0)).toFixed(2)
+               this.total_latas = parseFloat(this.registros.reduce((acumulador, actual) => acumulador + parseFloat(actual.cantidad), 0)).toFixed(2)
              }
            })
            .catch((error) => (console.log(error)));
@@ -304,10 +313,31 @@ import EventBus from '../bus'
          }
       },
       cambiarTipoOrden () {
-        if (this.tabla_nombre=="orden")
+        if (this.tabla_nombre=="orden") {
           this.tipo_orden_select = [{text:'Todo', value:""},{text:'Compra', value:0},{text:'Venta', value:1}]
-        else
+          this.json_fields = {
+            Fecha: "fecha",
+            Cedula: "cedula",
+            "Nombre y Apellido": "nombre",
+            Sede: "sede_nombre",
+            "Tipo de Orden": "tipo_orden",
+            "Tipo de Cacao": "tipo_nombre",
+            Humedad: "humedad",
+            Precio: "precio",
+            Cantidad: "cantidad",
+            Total: "total",
+          }
+        } else {
           this.tipo_orden_select = [{text:'Todo', value:""},{text:'Compra', value:0},{text:'Venta', value:1},{text:'Gasto', value:2}]
+          this.json_fields = {
+            Fecha: "fecha",
+            Cedula: "cedula",
+            "Nombre y Apellido": "nombre",
+            "Tipo de Orden": "tipo_orden",
+            Cantidad: "cantidad",
+            Observacion: "observacion"
+          }
+        }
       },
 
       SnackbarShow(tipo, mensaje) {
@@ -401,6 +431,18 @@ import EventBus from '../bus'
           timeout: 2500,
           title: null,
           visible: false
+        },
+        json_fields: {
+          Fecha: "fecha",
+          Cedula: "cedula",
+          "Nombre y Apellido": "nombre",
+          Sede: "sede_nombre",
+          "Tipo de Orden": "tipo_orden",
+          "Tipo de Cacao": "tipo_nombre",
+          Humedad: "humedad",
+          Precio: "precio",
+          Cantidad: "cantidad",
+          Total: "total",
         },
       }
     },
