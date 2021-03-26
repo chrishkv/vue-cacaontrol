@@ -183,12 +183,26 @@ if($request == 'editar_persona') {
   exit;
 }
 
-// Consulta todos los registros de la tabla persona para el componente orden
+// Se elimina la persona especificada pero solo si no tiene registros en la tabla orden o otras cuentas
 if($request == 'eliminar_persona'){
-  /*$persona_id = $data->persona_id;
-  $respuesta = mysqli_query($con,"update persona set borrado = 1 where id =".$persona_id);
+  $persona_id = $data->persona_id;
+  $sql = $con->prepare("SELECT orden.id FROM orden INNER JOIN persona on (orden.persona_id = persona.id) WHERE persona.id = :persona_id");
+  $sql->bindValue(':persona_id',$persona_id,PDO::PARAM_INT);
+  $sql->execute();
+  if ($sql->rowCount() == 0) {
+    $sql = $con->prepare("SELECT otras_cuentas.id FROM otras_cuentas INNER JOIN persona on (otras_cuentas.persona_id = persona.id) WHERE persona.id = :persona_id");
+    $sql->bindValue(':persona_id',$persona_id,PDO::PARAM_INT);
+    $sql->execute();
+    if ($sql->rowCount() == 0) {
+      $sql = $con->prepare("DELETE FROM persona WHERE id=:persona_id");
+      $sql->bindValue(':persona_id',$persona_id,PDO::PARAM_INT);
+      $response=$sql->execute();
+      echo json_encode($response);
+      exit;
+    }
+  }
 
-  echo json_encode($respuesta);*/
+  echo json_encode(false);
   exit;
 }
 

@@ -108,9 +108,13 @@ import axios from 'axios'
 import EventBus from '../bus'
 
   export default {
-    created: function() {
+    created() {
         EventBus.$on('add-persona', (item) => {
             this.personas.unshift({id:item[1], nombre:item[0]})
+        }),
+        
+        EventBus.$on('remove-persona', (item) => {
+            this.personas = this.personas.filter(persona => persona.id != item[0])
         })
     },
 

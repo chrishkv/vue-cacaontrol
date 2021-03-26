@@ -204,23 +204,21 @@ import EventBus from '../bus'
        this.parcela = persona.parcela
      },
 
-     deletePersona(/*persona*/) {
-       this.SnackbarShow("error", "Funcion aún en construcción")
-       /*axios.post('./ajaxfile.php', {
+     deletePersona(persona) {
+       axios.post('./ajaxfile.php', {
          request: 'eliminar_persona',
-         persona_id: persona.persona_id,
+         persona_id: persona.id,
        })
-       .then((response) => (
-         this.personas.unshift({
-           nombre: this.nombre,
-           cedula: this.cedula,
-           telefono: this.telefono,
-           mail: this.mail,
-           direccion: this.direccion
-         }),
-         EventBus.$emit('remove-persona', [this.nombre, response.data])
-       ))
-       .catch(error => (console.log(error)))*/
+       .then((response) => {
+         if (response.data) {
+           EventBus.$emit('remove-persona', [persona.id])
+           this.SnackbarShow("success", "Borrado Correctamente.")
+           this.personas = this.personas.filter(item => item.id != persona.id)
+         } else {
+           this.SnackbarShow("error", "Tiene registros Guardados. No se puede borrar.")
+         }
+       })
+       .catch(error => (console.log(error)))
      },
 
      SnackbarShow(tipo, mensaje) {
