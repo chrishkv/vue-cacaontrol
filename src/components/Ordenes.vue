@@ -1,7 +1,14 @@
 <template>
   <div>
   <div class="text-center">
-    <v-dialog v-model="dialog">
+    <v-dialog v-model="dialog_factura" :width="600">
+      <Factura
+        @cerrarDialogo="closeDialog"
+        :ordenes="factura_datos"
+        :persona="factura_persona"
+      />
+    </v-dialog>
+    <v-dialog v-model="dialog_nuevo">
       <v-card>
         <v-card-title class="headline grey lighten-2">
           Total General: {{ getTotalOrdenes }}&nbsp;$
@@ -9,6 +16,8 @@
           Total Latas: {{ getTotalLatas }}&nbsp;lt
           <v-divider vertical class="mx-4"></v-divider>
           Total Quintales: {{ getTotalQuintales }}&nbsp;qt
+          <v-divider vertical class="mx-4"></v-divider>
+          <v-checkbox v-model="check_factura" :label="`Generar Factura`"></v-checkbox>
         </v-card-title>
 
         <v-card v-for="(agregar_orden, i) in agregar_ordenes" :key="i">
@@ -87,7 +96,7 @@
         <v-col cols="12" sm="2">
           <v-select :items="sede_select" filled label="Sede" v-model="sede_id" item-value="value" background-color="#AFEEEE"></v-select>
         </v-col>
-        <v-btn v-show="persona_id" id="boton_agregar" color="primary" large @click="dialog = true">Agregar</v-btn>
+        <v-btn v-show="persona_id" id="boton_agregar" color="primary" large @click="dialog_nuevo = true">Agregar</v-btn>
       </v-row>
     </v-container>
   </v-form>
@@ -141,13 +150,30 @@
   .row {
     padding-left: 10px;
   }
+
+  .row > .row {
+    padding: 0px;
+  }
+
+  table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+    text-align:center;
+    font-size: 15px;
+  }
+
 </style>
 <script>
 import moment from 'moment'
 import axios from 'axios'
 import EventBus from '../bus'
+import Factura from './Factura.vue'
 
   export default {
+    components: {
+      Factura
+    },
+
     created() {
         EventBus.$on('add-persona', (item) => {
             this.personas.unshift({id:item[1], nombre:item[0]})
@@ -228,8 +254,8 @@ import EventBus from '../bus'
             .catch((error) => (console.log(error)))
           } else {
             //indica que va a ingresar una orden nueva
+            let persona_id_temporal = this.persona_id
             var guardarTodoPromesa = new Promise((resolve, reject) => {
-              let persona_id_temporal = this.persona_id
               let tipo_orden_id_temporal = this.tipo_orden_id
               let sede_id_temporal = this.sede_id
               //se recorre cada elemento
@@ -258,7 +284,7 @@ import EventBus from '../bus'
                       tipo_orden_id: tipo_orden_id_temporal ? 'Venta' : 'Compra',
                       sede_nombre: this.sede_select[sede_id_temporal].text,
                       cantidad: orden.cantidad + diminutivo,
-                      humedad: orden.humedad + ' %',
+                      humedad: orden.humedad ? orden.humedad + ' %' : '',
                       tipo: this.tipo_select[orden.tipo].text,
                       precio: orden.precio,
                       total: orden.total,
@@ -273,6 +299,15 @@ import EventBus from '../bus'
               })
               resolve(true)
             }).then(() => {
+              if (this.check_factura) {
+                this.dialog_factura = true
+                //se le pone nombre a cada orden segun el tipo de cacao
+                this.agregar_ordenes.map(orden => {
+                  orden.tipo_nombre = this.tipo_array_busqueda[orden.tipo]
+                })
+                this.factura_datos = this.agregar_ordenes
+                this.factura_persona = this.personas.find((item)=>{return item.id == persona_id_temporal})
+              }
               this.limpiarTodo()
             })
             Promise.all([guardarTodoPromesa])
@@ -327,7 +362,7 @@ import EventBus from '../bus'
         total: orden.total,
         observacion: orden.observacion,
       }],
-      this.dialog = true
+      this.dialog_nuevo = true
     },
 
     SnackbarShow(tipo, mensaje) {
@@ -380,7 +415,7 @@ import EventBus from '../bus'
 
     limpiarTodo () {
       //se cierra el modal
-      this.dialog = false,
+      this.dialog_nuevo = false,
       //Se borra la informacion de las variables
       this.orden_id = '',
       this.persona_id = '',
@@ -392,8 +427,13 @@ import EventBus from '../bus'
         precio:'',
         humedad:'',
         total:'',
-        observacion:''
+        observacion:'',
+        tipo_nombre:'',
       }]
+    },
+
+    closeDialog: function() {
+      this.dialog_factura = false
     },
     },
 
@@ -408,7 +448,11 @@ import EventBus from '../bus'
           total_cantidad_modal: 0,
           ordenes: [],
           personas: [],
-          dialog: false,
+          dialog_nuevo: false,
+          dialog_factura: false,
+          check_factura: true,
+          factura_datos: [],
+          factura_persona: null,
           agregar_ordenes: [{
             tipo:0,
             cantidad:'',
@@ -416,6 +460,7 @@ import EventBus from '../bus'
             humedad:'',
             total:'',
             observacion:'',
+            tipo_nombre:'',
           }],
           snackbar: {
             color: null,
