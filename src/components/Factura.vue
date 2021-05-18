@@ -12,7 +12,7 @@
             ></v-img>
             <p>
               <span class="font-weight-black">FACTURA</span><br>
-              Serie: 001-001 000000001<br>
+              Serie: 001-001 {{ codigo }}<br>
               Fecha Emisión: {{ fecha }}
             </p>
           </v-col>
@@ -102,7 +102,7 @@ import moment from 'moment'
 import jsPDF from 'jspdf'
 
   export default {
-    props: ['ordenes', 'persona'],
+    props: ['ordenes', 'persona', 'codigo'],
 
     data () {
       return {

@@ -1,11 +1,12 @@
 <template>
   <div>
   <div class="text-center">
-    <v-dialog v-model="dialog_factura" :width="600">
+    <v-dialog v-model="mostrar_factura" :width="600">
       <Factura
         @cerrarDialogo="closeDialog"
         :ordenes="factura_datos"
         :persona="factura_persona"
+        :codigo="factura_codigo"
       />
     </v-dialog>
     <v-dialog v-model="dialog_nuevo">
@@ -17,7 +18,7 @@
           <v-divider vertical class="mx-4"></v-divider>
           Total Quintales: {{ getTotalQuintales }}&nbsp;qt
           <v-divider vertical class="mx-4"></v-divider>
-          <v-checkbox v-model="check_factura" :label="`Generar Factura`"></v-checkbox>
+          <v-checkbox v-model="generar_factura" :label="`Generar Factura`"></v-checkbox>
         </v-card-title>
 
         <v-card v-for="(agregar_orden, i) in agregar_ordenes" :key="i">
@@ -227,34 +228,11 @@ import Factura from './Factura.vue'
         if(this.persona_id != '' && this.revisarOrdenes()) {
           //indica que va a editar
           if(this.orden_id) {
-            let orden_temporal = this.agregar_ordenes[0]
-            axios.post('./ajaxfile.php', {
-              request: 'editar_orden',
-              orden_id: this.orden_id,
-              persona_id: this.persona_id,
-              tipo_orden_id: this.tipo_orden_id,
-              sede_id: this.sede_id,
-              cantidad: orden_temporal.cantidad,
-              humedad: orden_temporal.humedad,
-              tipo: orden_temporal.tipo,
-              precio: orden_temporal.precio,
-              total: orden_temporal.total,
-              observacion: orden_temporal.observacion
-
-            })
-            .then((response) => {
-              if (response.data) {
-                this.SnackbarShow("success", "Editado Correctamente."),
-                this.getOrdenes(),
-                this.limpiarTodo()
-              } else {
-                this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
-              }
-            })
-            .catch((error) => (console.log(error)))
+            this.editarOrden()
           } else {
             //indica que va a ingresar una orden nueva
             let persona_id_temporal = this.persona_id
+            let ordenes_para_factura = []
             var guardarTodoPromesa = new Promise((resolve, reject) => {
               let tipo_orden_id_temporal = this.tipo_orden_id
               let sede_id_temporal = this.sede_id
@@ -277,7 +255,7 @@ import Factura from './Factura.vue'
                   if (response.data) {
                     this.SnackbarShow("success", "Guardado Correctamente.")
                     let diminutivo = (orden.tipo % 2 == 0) ? ' lt' : ' qt'
-                    this.ordenes.unshift({
+                    let orden_temporal = {
                       id: response.data,
                       nombre: this.personas.find((item)=>{return item.id == persona_id_temporal}).nombre,
                       persona_id: persona_id_temporal,
@@ -285,12 +263,15 @@ import Factura from './Factura.vue'
                       sede_nombre: this.sede_select[sede_id_temporal].text,
                       cantidad: orden.cantidad + diminutivo,
                       humedad: orden.humedad ? orden.humedad + ' %' : '',
-                      tipo: this.tipo_select[orden.tipo].text,
+                      tipo: orden.tipo,
+                      tipo_nombre: this.tipo_select[orden.tipo].text,
                       precio: orden.precio,
                       total: orden.total,
                       observacion: orden.observacion,
                       fecha: moment(String(new Date())).format('YYYY/MM/DD')
-                    })
+                    }
+                    this.ordenes.unshift(orden_temporal)
+                    ordenes_para_factura.push(orden_temporal)
                   } else {
                     this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
                   }
@@ -299,14 +280,8 @@ import Factura from './Factura.vue'
               })
               resolve(true)
             }).then(() => {
-              if (this.check_factura) {
-                this.dialog_factura = true
-                //se le pone nombre a cada orden segun el tipo de cacao
-                this.agregar_ordenes.map(orden => {
-                  orden.tipo_nombre = this.tipo_array_busqueda[orden.tipo]
-                })
-                this.factura_datos = this.agregar_ordenes
-                this.factura_persona = this.personas.find((item)=>{return item.id == persona_id_temporal})
+              if (this.generar_factura) {
+                this.cargarFactura(persona_id_temporal,ordenes_para_factura)
               }
               this.limpiarTodo()
             })
@@ -433,7 +408,56 @@ import Factura from './Factura.vue'
     },
 
     closeDialog: function() {
-      this.dialog_factura = false
+      this.mostrar_factura = false
+      this.factura_codigo = null
+    },
+
+    editarOrden: function() {
+      let orden_temporal = this.agregar_ordenes.pop()
+      axios.post('./ajaxfile.php', {
+        request: 'editar_orden',
+        orden_id: this.orden_id,
+        persona_id: this.persona_id,
+        tipo_orden_id: this.tipo_orden_id,
+        sede_id: this.sede_id,
+        cantidad: orden_temporal.cantidad,
+        humedad: orden_temporal.humedad,
+        tipo: orden_temporal.tipo,
+        precio: orden_temporal.precio,
+        total: orden_temporal.total,
+        observacion: orden_temporal.observacion
+      })
+      .then((response) => {
+        if (response.data) {
+          this.SnackbarShow("success", "Editado Correctamente."),
+          this.getOrdenes(),
+          this.limpiarTodo()
+        } else {
+          this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
+        }
+      })
+      .catch((error) => (console.log(error)))
+    },
+
+    cargarFactura: function(persona_id, ordenes) {
+      console.log(ordenes)
+      axios.post('./ajaxfile.php', {
+        request: 'insertar_factura',
+        persona: persona_id,
+        ordnes: ordenes.map(orden => orden.id),
+      })
+      .then((response) => {
+        if (response.data) {
+          this.SnackbarShow("success", "Generado Correctamente.")
+          this.mostrar_factura = true
+          this.factura_datos = ordenes
+          this.factura_persona = this.personas.find((item)=>{return item.id == persona_id})
+          this.factura_codigo = response.data
+        } else {
+          this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
+        }
+      })
+      .catch((error) => (console.log(error)))
     },
     },
 
@@ -449,10 +473,11 @@ import Factura from './Factura.vue'
           ordenes: [],
           personas: [],
           dialog_nuevo: false,
-          dialog_factura: false,
-          check_factura: true,
+          mostrar_factura: false,
+          generar_factura: true,
           factura_datos: [],
           factura_persona: null,
+          factura_codigo: null,
           agregar_ordenes: [{
             tipo:0,
             cantidad:'',
@@ -503,7 +528,7 @@ import Factura from './Factura.vue'
             { text: 'Sede', value: 'sede_nombre' },
             { text: 'Cantidad', value: 'cantidad' },
             { text: 'Humedad', value: 'humedad' },
-            { text: 'Tipo', value: 'tipo' },
+            { text: 'Tipo', value: 'tipo_nombre' },
             { text: 'Precio', value: 'precio' },
             { text: 'Total', value: 'total' },
             { text: 'Fecha', value: 'fecha' },

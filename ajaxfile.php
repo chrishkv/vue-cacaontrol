@@ -21,7 +21,7 @@ if($request == 'consulta_orden'){
     $diminutivo = ($row['tipo'] % 2 == 0) ? ' lt' : ' qt';
     $row['tipo_orden_id'] = $row['tipo_orden_id'] ? 'Venta' : 'Compra';
     $row['nombre'] = $row['nombre'];
-    $row['tipo'] = $tipos[$row['tipo']];
+    $row['tipo_nombre'] = $tipos[$row['tipo']];
     $row['cantidad'] = $row['cantidad'] . $diminutivo;
     $row['sede_nombre'] = $sedes[$row['sede_id']];
     $response[] = $row;
@@ -401,5 +401,21 @@ if($request == 'consultar_registros') {
   }
 
   echo json_encode($response);
+  exit;
+}
+
+// insertar en la tabla Factura
+if($request == 'insertar_factura'){
+  $sql = $con->prepare("INSERT INTO factura(persona_id, codigo, fecha) VALUES (:persona_id, 0, :fecha)");
+  $persona = $data->persona;
+  //$ordenes = $data->ordenes;
+  $fecha = date("Y-m-d", strtotime("now"));
+  $sql->bindValue(':persona_id',$persona,PDO::PARAM_INT);
+  $sql->bindValue(':fecha',$fecha,PDO::PARAM_STR);
+  $result = $sql->execute();
+  //Devuelve el id del ultimo registro ingresado
+  $response= $result ? $con->lastInsertId() : false;
+  echo json_encode($response);
+
   exit;
 }
