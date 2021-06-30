@@ -19,10 +19,10 @@ if($request == 'consulta_orden'){
 
   while($row=$sql->fetch(PDO::FETCH_ASSOC)){
     $diminutivo = ($row['tipo'] % 2 == 0) ? ' lt' : ' qt';
-    $row['tipo_orden_id'] = $row['tipo_orden_id'] ? 'Venta' : 'Compra';
+    $row['tipo_orden_nombre'] = $row['tipo_orden_id'] ? 'Venta' : 'Compra';
     $row['nombre'] = $row['nombre'];
     $row['tipo_nombre'] = $tipos[$row['tipo']];
-    $row['cantidad'] = $row['cantidad'] . $diminutivo;
+    $row['cantidad_completo'] = $row['cantidad'] . $diminutivo;
     $row['sede_nombre'] = $sedes[$row['sede_id']];
     $response[] = $row;
   }

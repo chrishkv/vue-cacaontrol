@@ -231,61 +231,7 @@ import Factura from './Factura.vue'
             this.editarOrden()
           } else {
             //indica que va a ingresar una orden nueva
-            let persona_id_temporal = this.persona_id
-            let ordenes_para_factura = []
-            var guardarTodoPromesa = new Promise((resolve, reject) => {
-              let tipo_orden_id_temporal = this.tipo_orden_id
-              let sede_id_temporal = this.sede_id
-              //se recorre cada elemento
-              this.agregar_ordenes.forEach((orden) => {
-                axios.post('./ajaxfile.php', {
-                  request: 'insertar_orden',
-                  persona_id: this.persona_id,
-                  tipo_orden_id: this.tipo_orden_id,
-                  sede_id: this.sede_id,
-                  cantidad: orden.cantidad,
-                  humedad: orden.humedad,
-                  tipo: orden.tipo,
-                  precio: orden.precio,
-                  total: orden.total,
-                  observacion: orden.observacion,
-                  fecha: moment(String(new Date())).format('YYYY/MM/DD')
-                })
-                .then((response) => {
-                  if (response.data) {
-                    this.SnackbarShow("success", "Guardado Correctamente.")
-                    let diminutivo = (orden.tipo % 2 == 0) ? ' lt' : ' qt'
-                    let orden_temporal = {
-                      id: response.data,
-                      nombre: this.personas.find((item)=>{return item.id == persona_id_temporal}).nombre,
-                      persona_id: persona_id_temporal,
-                      tipo_orden_id: tipo_orden_id_temporal ? 'Venta' : 'Compra',
-                      sede_nombre: this.sede_select[sede_id_temporal].text,
-                      cantidad: orden.cantidad + diminutivo,
-                      humedad: orden.humedad ? orden.humedad + ' %' : '',
-                      tipo: orden.tipo,
-                      tipo_nombre: this.tipo_select[orden.tipo].text,
-                      precio: orden.precio,
-                      total: orden.total,
-                      observacion: orden.observacion,
-                      fecha: moment(String(new Date())).format('YYYY/MM/DD')
-                    }
-                    this.ordenes.unshift(orden_temporal)
-                    ordenes_para_factura.push(orden_temporal)
-                  } else {
-                    this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
-                  }
-                })
-                .catch((error) => (console.log(error), reject()))
-              })
-              resolve(true)
-            }).then(() => {
-              if (this.generar_factura) {
-                this.cargarFactura(persona_id_temporal,ordenes_para_factura)
-              }
-              this.limpiarTodo()
-            })
-            Promise.all([guardarTodoPromesa])
+            this.nuevaOrden()
           }
         } else {
           this.SnackbarShow("warning", "Faltan algunos datos por favor revise.")
@@ -385,6 +331,7 @@ import Factura from './Factura.vue'
     },
 
     revisarOrdenes () {
+      //Se deben colocar todas las condiciones para que la orden este correcta
       return true
     },
 
@@ -439,12 +386,53 @@ import Factura from './Factura.vue'
       .catch((error) => (console.log(error)))
     },
 
+    nuevaOrden: async function() {
+        //Se agregan propiedades a las ordenes
+        let ordenes_iterador = this.agregar_ordenes.map(orden => {
+            orden.persona_id = this.persona_id
+            orden.tipo_orden_id = this.tipo_orden_id
+            orden.sede_id = this.sede_id
+            orden.fecha = moment(String(new Date())).format('YYYY/MM/DD')
+            return orden;
+        })
+        for await (let orden of ordenes_iterador) {
+          var respuesta_insertar = await axios.post('./ajaxfile.php', {
+            request: 'insertar_orden',
+            ...orden
+          })
+          orden.id = respuesta_insertar.data
+          this.factura_datos.push(orden)
+        }
+        if (this.factura_datos.length > 0) {
+          this.SnackbarShow("success", "Guardado Correctamente.")
+        } else {
+          this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
+        }
+        this.agregar_listado(this.factura_datos)
+        this.limpiarTodo()
+        /*if (this.generar_factura) {
+          this.cargarFactura(persona_id_temporal,ordenes_para_factura)
+        }*/
+    },
+
+    agregar_listado: function(ordenes) {
+        for (let orden of ordenes) {
+          let diminutivo = (orden.tipo % 2 == 0) ? ' lt' : ' qt'
+          orden.cantidad_completo = orden.cantidad + diminutivo
+          orden.nombre = this.personas.find((item)=>{return item.id == orden.persona_id}).nombre
+          orden.tipo_orden_nombre = orden.tipo_orden_id ? 'Venta' : 'Compra'
+          orden.sede_nombre = this.sede_select[orden.sede_id].text
+          orden.tipo_nombre = this.tipo_select[orden.tipo].text
+          this.ordenes.unshift(orden)
+        }
+    },
+
     cargarFactura: function(persona_id, ordenes) {
       console.log(ordenes)
       axios.post('./ajaxfile.php', {
         request: 'insertar_factura',
         persona: persona_id,
-        ordnes: ordenes.map(orden => orden.id),
+        ordenes: ordenes.map(orden => orden.id),
       })
       .then((response) => {
         if (response.data) {
@@ -524,9 +512,9 @@ import Factura from './Factura.vue'
               value: 'id',
             },
             {text: 'Persona Nombre',value: 'nombre' },
-            { text: 'Tipo Orden', value: 'tipo_orden_id' },
+            { text: 'Tipo Orden', value: 'tipo_orden_nombre' },
             { text: 'Sede', value: 'sede_nombre' },
-            { text: 'Cantidad', value: 'cantidad' },
+            { text: 'Cantidad', value: 'cantidad_completo' },
             { text: 'Humedad', value: 'humedad' },
             { text: 'Tipo', value: 'tipo_nombre' },
             { text: 'Precio', value: 'precio' },
