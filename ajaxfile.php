@@ -7,7 +7,15 @@ $request = $data->request;
 
 // Consulta todos los registros de la tabla orden
 if($request == 'consulta_orden'){
-  $sql = $con->prepare("SELECT orden.*, persona.nombre, persona.id as persona_id FROM orden INNER JOIN persona on (orden.persona_id = persona.id) WHERE fecha BETWEEN ? AND ? order by id desc");
+  $sql = $con->prepare("SELECT orden.*,
+                        persona.nombre,
+                        persona.id as persona_id,
+                        factura_orden.factura_id as factura_id
+                        FROM orden
+                        INNER JOIN persona ON (orden.persona_id = persona.id)
+                        LEFT JOIN factura_orden ON (orden.id = factura_orden.orden_id)
+                        WHERE fecha BETWEEN ? AND ?
+                        order by id desc");
   $fecha_desde=date('Y-m-d',strtotime('-29 days',strtotime("now")));
   $fecha_hasta=date("Y-m-d", strtotime("now"));
   $sql->bindValue(1,$fecha_desde,PDO::PARAM_STR);
@@ -408,7 +416,7 @@ if($request == 'consultar_registros') {
 if($request == 'insertar_factura'){
   $sql = $con->prepare("INSERT INTO factura(persona_id, codigo, fecha) VALUES (:persona_id, 0, :fecha)");
   $persona = $data->persona;
-  //$ordenes = $data->ordenes;
+  $ordenes_ids = $data->ordenes;
   $fecha = date("Y-m-d", strtotime("now"));
   $sql->bindValue(':persona_id',$persona,PDO::PARAM_INT);
   $sql->bindValue(':fecha',$fecha,PDO::PARAM_STR);
@@ -416,6 +424,15 @@ if($request == 'insertar_factura'){
   //Devuelve el id del ultimo registro ingresado
   $response= $result ? $con->lastInsertId() : false;
   echo json_encode($response);
+
+  if ($response) {
+    $sql = $con->prepare("INSERT INTO factura_orden(factura_id, orden_id) VALUES (:factura_id, :orden_id)");
+    foreach ($ordenes_ids as $orden_id) {
+      $sql->bindValue(':factura_id',$response,PDO::PARAM_INT);
+      $sql->bindValue(':orden_id',$orden_id,PDO::PARAM_INT);
+      $result = $sql->execute();
+    }
+  }
 
   exit;
 }

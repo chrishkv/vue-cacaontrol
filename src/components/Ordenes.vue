@@ -1,7 +1,7 @@
 <template>
   <div>
   <div class="text-center">
-    <v-dialog v-model="mostrar_factura" :width="600">
+    <v-dialog no-click-animation persistent v-model="mostrar_factura" :width="600">
       <Factura
         @cerrarDialogo="closeDialog"
         :ordenes="factura_datos"
@@ -122,14 +122,14 @@
         }"
       >
       <template v-slot:item.actions="{ item }">
-        <v-icon
+        <v-icon v-show="!item.factura_id"
           small
           class="mr-2"
           @click="editOrden(item)"
         >
           mdi-pencil
         </v-icon>
-        <v-icon
+        <v-icon v-show="!item.factura_id"
           small
           @click="deleteOrden(item)"
         >
@@ -337,12 +337,12 @@ import Factura from './Factura.vue'
 
     limpiarTodo () {
       //se cierra el modal
-      this.dialog_nuevo = false,
+      this.dialog_nuevo = false
       //Se borra la informacion de las variables
-      this.orden_id = '',
-      this.persona_id = '',
-      this.tipo_orden_id = 0,
-      this.sede_id = 0,
+      this.orden_id = ''
+      this.persona_id = ''
+      this.tipo_orden_id = 0
+      this.sede_id = 0
       this.agregar_ordenes = [{
         tipo:0,
         cantidad:'',
@@ -357,6 +357,7 @@ import Factura from './Factura.vue'
     closeDialog: function() {
       this.mostrar_factura = false
       this.factura_codigo = null
+      this.factura_datos = []
     },
 
     editarOrden: function() {
@@ -395,24 +396,27 @@ import Factura from './Factura.vue'
             orden.fecha = moment(String(new Date())).format('YYYY/MM/DD')
             return orden;
         })
-        for await (let orden of ordenes_iterador) {
-          var respuesta_insertar = await axios.post('./ajaxfile.php', {
-            request: 'insertar_orden',
-            ...orden
-          })
-          orden.id = respuesta_insertar.data
-          this.factura_datos.push(orden)
-        }
+        try {
+          for await (let orden of ordenes_iterador) {
+            var respuesta_insertar = await axios.post('./ajaxfile.php', {
+              request: 'insertar_orden',
+              ...orden
+            })
+            orden.id = respuesta_insertar.data
+            this.factura_datos.push(orden)
+          }
+        } catch (error) {console.log(error)}
+
         if (this.factura_datos.length > 0) {
           this.SnackbarShow("success", "Guardado Correctamente.")
         } else {
           this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
         }
         this.agregar_listado(this.factura_datos)
+        if (this.generar_factura) {
+          this.cargarFactura()
+        }
         this.limpiarTodo()
-        /*if (this.generar_factura) {
-          this.cargarFactura(persona_id_temporal,ordenes_para_factura)
-        }*/
     },
 
     agregar_listado: function(ordenes) {
@@ -427,19 +431,17 @@ import Factura from './Factura.vue'
         }
     },
 
-    cargarFactura: function(persona_id, ordenes) {
-      console.log(ordenes)
+    cargarFactura: function() {
       axios.post('./ajaxfile.php', {
         request: 'insertar_factura',
-        persona: persona_id,
-        ordenes: ordenes.map(orden => orden.id),
+        persona: this.factura_datos[0].persona_id,
+        ordenes: this.factura_datos.map(orden => orden.id)
       })
       .then((response) => {
         if (response.data) {
           this.SnackbarShow("success", "Generado Correctamente.")
           this.mostrar_factura = true
-          this.factura_datos = ordenes
-          this.factura_persona = this.personas.find((item)=>{return item.id == persona_id})
+          this.factura_persona = this.personas.find((item)=>{return item.id == this.factura_datos[0].persona_id})
           this.factura_codigo = response.data
         } else {
           this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
