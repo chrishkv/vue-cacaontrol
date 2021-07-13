@@ -74,7 +74,7 @@ if($request == 'insertar_orden'){
 // editar en la tabla Orden
 if($request == 'editar_orden') {
   $sql = $con->prepare("UPDATE orden SET persona_id=?,tipo_orden_id=?,sede_id=?,tipo=?,cantidad=?,humedad=?,precio=?,total=?,observacion=? WHERE id=?");
-  $orden_id = $data->orden_id;
+  $orden_id = $data->id;
   $persona_id = $data->persona_id;
   $tipo_orden_id = $data->tipo_orden_id;
   $sede_id = $data->sede_id;

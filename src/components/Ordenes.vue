@@ -271,18 +271,18 @@ import Factura from './Factura.vue'
     },
 
     editOrden: function (orden) {
-      this.persona_id = orden.persona_id,
-      this.orden_id = orden.id,
-      this.tipo_orden_id = (orden.tipo_orden_id == 'Compra') ? 0 : 1,
-      this.sede_id = parseInt(orden.sede_id),
+      this.persona_id = orden.persona_id
+      this.orden_id = orden.id
+      this.tipo_orden_id = parseInt(orden.tipo_orden_id)
+      this.sede_id = parseInt(orden.sede_id)
       this.agregar_ordenes = [{
-        tipo: this.tipo_array_busqueda.indexOf(orden.tipo),
-        cantidad: orden.cantidad.match(/^(\.\d+)|(\d+(\.\d+)?)/)[0],
+        tipo: parseInt(orden.tipo),
+        cantidad: orden.cantidad,
         precio: orden.precio,
         humedad: orden.humedad,
         total: orden.total,
         observacion: orden.observacion,
-      }],
+      }]
       this.dialog_nuevo = true
     },
 
@@ -362,23 +362,20 @@ import Factura from './Factura.vue'
 
     editarOrden: function() {
       let orden_temporal = this.agregar_ordenes.pop()
+      //Se agregan propiedades a las ordenes
+      orden_temporal.id = this.orden_id
+      orden_temporal.persona_id = this.persona_id
+      orden_temporal.tipo_orden_id = this.tipo_orden_id
+      orden_temporal.sede_id = this.sede_id
+      orden_temporal.fecha = moment(String(new Date())).format('YYYY/MM/DD')
       axios.post('./ajaxfile.php', {
         request: 'editar_orden',
-        orden_id: this.orden_id,
-        persona_id: this.persona_id,
-        tipo_orden_id: this.tipo_orden_id,
-        sede_id: this.sede_id,
-        cantidad: orden_temporal.cantidad,
-        humedad: orden_temporal.humedad,
-        tipo: orden_temporal.tipo,
-        precio: orden_temporal.precio,
-        total: orden_temporal.total,
-        observacion: orden_temporal.observacion
+        ...orden_temporal
       })
       .then((response) => {
         if (response.data) {
           this.SnackbarShow("success", "Editado Correctamente."),
-          this.getOrdenes(),
+          this.agregarEditarListado(orden_temporal),
           this.limpiarTodo()
         } else {
           this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
@@ -412,14 +409,15 @@ import Factura from './Factura.vue'
         } else {
           this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
         }
-        this.agregar_listado(this.factura_datos)
+        this.agregarNuevoListado(this.factura_datos)
         if (this.generar_factura) {
           this.cargarFactura()
         }
         this.limpiarTodo()
     },
 
-    agregar_listado: function(ordenes) {
+    //Se agrega al listado con toda la informacion para mostrar
+    agregarNuevoListado: function(ordenes) {
         for (let orden of ordenes) {
           let diminutivo = (orden.tipo % 2 == 0) ? ' lt' : ' qt'
           orden.cantidad_completo = orden.cantidad + diminutivo
@@ -429,6 +427,18 @@ import Factura from './Factura.vue'
           orden.tipo_nombre = this.tipo_select[orden.tipo].text
           this.ordenes.unshift(orden)
         }
+    },
+
+    //Se agrega al listado con toda la informacion para mostrar
+    agregarEditarListado: function(orden) {
+      let indice = this.ordenes.findIndex(item => item.id === orden.id)
+      let diminutivo = (orden.tipo % 2 == 0) ? ' lt' : ' qt'
+      orden.cantidad_completo = orden.cantidad + diminutivo
+      orden.nombre = this.personas.find((item)=>{return item.id == orden.persona_id}).nombre
+      orden.tipo_orden_nombre = orden.tipo_orden_id ? 'Venta' : 'Compra'
+      orden.sede_nombre = this.sede_select[orden.sede_id].text
+      orden.tipo_nombre = this.tipo_select[orden.tipo].text
+      this.ordenes.splice(indice, 1, orden)
     },
 
     cargarFactura: function() {
@@ -492,13 +502,6 @@ import Factura from './Factura.vue'
             {text:'Latas Nacional', value:2},
             {text:'Seco Nacional', value:3},
             {text:'Latas Monilla', value:4},
-          ],
-          tipo_array_busqueda:[
-            'Latas CCN51',
-            'Seco CCN51',
-            'Latas Nacional',
-            'Seco Nacional',
-            'Latas Monilla'
           ],
           numberRules: [
             v => !!v || 'Valor es Obligatorio',
