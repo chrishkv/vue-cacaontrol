@@ -4,11 +4,12 @@
       <div ref="facturaHtml">
       <v-card>
         <v-row>
-          <v-col cols="12" sm="6">
+          <v-col cols="12" sm="4">
             <v-img
-              max-height="100"
+              max-height="120"
               max-width="150"
-              src="img/cacaontrollogo.png"
+              src="../../img/cacaontrollogo.png"
+              id="logoFactura"
             ></v-img>
             <p>
               <span class="font-weight-black">FACTURA</span><br>
@@ -16,8 +17,8 @@
               Fecha Emisión: {{ fecha }}
             </p>
           </v-col>
-          <v-col cols="12" sm="6">
-            <p>
+          <v-col cols="12" sm="8">
+            <p id="informacionPropia">
               <span class="font-weight-black">HUGO PORFIRIO VALDIVIESO ROMERO</span><br>
               R.U.C.: 0701211369001<br>
               AGROINDUSTRIAL BLACK RIVER<br>
@@ -85,16 +86,21 @@
   </v-container>
 </template>
 <style scoped>
-  .row {
-    padding-left: 10px;
-  }
-
-  p {
+  .v-application p {
     font-size: 12px;
+    margin-bottom: 0px;
   }
 
-  .v-divider {
-    padding: 4px;
+  #informacionPropia {
+    line-height: 21px;
+  }
+
+  p, #logoFactura {
+    margin-left: 3px;
+  }
+
+  .row {
+    margin-top: -10px;
   }
 </style>
 <script>

@@ -61,14 +61,14 @@
           </v-row>
           <v-row>
             <v-col cols="12" sm="2">
-              <img class="clickeable_icon" name="Generar PDF" src="img/adobe_pdf_document.ico" :height="45" :width="45" cursor="pointer" v-on:click="generatePdf"/>
+              <img class="clickeable_icon" name="Generar PDF" src="../../img/adobe_pdf_document.png" :height="45" :width="45" cursor="pointer" v-on:click="generatePdf"/>
             </v-col>
             <v-col cols="12" sm="2">
                 <download-excel
                   :data="registros"
                   :fields="json_fields"
                   name="cacaontrol">
-                  <img src="img/excel.ico" :height="45" :width="45" class="clickeable_icon" cursor="pointer"/>
+                  <img src="../../img/excel.png" :height="45" :width="45" class="clickeable_icon" cursor="pointer"/>
                 </download-excel>
             </v-col>
           </v-row>
@@ -274,7 +274,7 @@ Vue.component("downloadExcel", JsonExcel);
         EventBus.$on('add-persona', (item) => {
             this.personas.unshift({id:item[1], nombre:item[0]})
         }),
-        
+
         EventBus.$on('remove-persona', (item) => {
             this.personas = this.personas.filter(persona => persona.id != item[0])
         })
