@@ -18,7 +18,9 @@
           <v-divider vertical class="mx-4"></v-divider>
           Total Quintales: {{ getTotalQuintales }}&nbsp;qt
           <v-divider vertical class="mx-4"></v-divider>
-          <v-checkbox v-model="generar_factura" :label="`Generar Factura`"></v-checkbox>
+          <template v-if="!orden_id">
+            <v-checkbox v-model="generar_factura" :label="`Generar Factura`"></v-checkbox>
+          </template>
         </v-card-title>
 
         <v-card v-for="(agregar_orden, i) in agregar_ordenes" :key="i">
@@ -48,7 +50,7 @@
         </v-card>
 
         <v-card-actions class="justify-center">
-          <v-icon color="green darken-2" @click="agregarOtraOrden">mdi-plus-circle</v-icon>
+          <v-icon color="green darken-2" @click="agregarOtraOrden" v-show="orden_id == ''">mdi-plus-circle</v-icon>
         </v-card-actions>
 
         <v-card-actions>
@@ -171,6 +173,7 @@ import EventBus from '../bus'
 import Factura from './Factura.vue'
 
   export default {
+    props: ['personas'],
     components: {
       Factura
     },
@@ -187,7 +190,6 @@ import Factura from './Factura.vue'
 
     mounted() {
       this.getOrdenes();
-      this.getPersonas();
     },
 
     computed : {
@@ -246,28 +248,22 @@ import Factura from './Factura.vue'
          .catch( (error) => (console.log(error)));
      },
 
-     getPersonas: function() {
-       axios.post('./ajaxfile.php', {
-         request: 'consulta_personas_select',
-        })
-        .then(response => (this.personas = response.data))
-        .catch((error) => (console.log(error)));
-    },
-
     deleteOrden: function (orden) {
-      axios.post('./ajaxfile.php', {
-        request: 'eliminar_orden',
-        orden_id: orden.id
-       })
-       .then(response => {
-         if (response.data) {
-           this.SnackbarShow("success", "Borrado Correctamente"),
-           this.getOrdenes()
-         } else {
-           this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
-         }
-       })
-       .catch( (error) => (console.log(error)));
+      if(confirm('¿Seguro desea borrar esta orden?'))
+        axios.post('./ajaxfile.php', {
+          request: 'eliminar_orden',
+          orden_id: orden.id
+         })
+         .then(response => {
+           if (response.data) {
+             this.SnackbarShow("success", "Borrado Correctamente")
+             let indice = this.ordenes.findIndex(item => item.id === orden.id)
+             this.ordenes.splice(indice, 1)
+           } else {
+             this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
+           }
+         })
+         .catch( (error) => (console.log(error)));
     },
 
     editOrden: function (orden) {
@@ -409,11 +405,13 @@ import Factura from './Factura.vue'
         } else {
           this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
         }
-        this.agregarNuevoListado(this.factura_datos)
         if (this.generar_factura) {
-          this.cargarFactura()
+          try {
+            await this.cargarFactura()
+          } catch (error) {console.log(error)}
         }
-        this.limpiarTodo()
+        await this.agregarNuevoListado(this.factura_datos)
+        await this.limpiarTodo()
     },
 
     //Se agrega al listado con toda la informacion para mostrar
@@ -425,6 +423,7 @@ import Factura from './Factura.vue'
           orden.tipo_orden_nombre = orden.tipo_orden_id ? 'Venta' : 'Compra'
           orden.sede_nombre = this.sede_select[orden.sede_id].text
           orden.tipo_nombre = this.tipo_select[orden.tipo].text
+          orden.factura_id = this.factura_codigo
           this.ordenes.unshift(orden)
         }
     },
@@ -441,23 +440,25 @@ import Factura from './Factura.vue'
       this.ordenes.splice(indice, 1, orden)
     },
 
-    cargarFactura: function() {
-      axios.post('./ajaxfile.php', {
-        request: 'insertar_factura',
-        persona: this.factura_datos[0].persona_id,
-        ordenes: this.factura_datos.map(orden => orden.id)
-      })
-      .then((response) => {
-        if (response.data) {
-          this.SnackbarShow("success", "Generado Correctamente.")
-          this.mostrar_factura = true
-          this.factura_persona = this.personas.find((item)=>{return item.id == this.factura_datos[0].persona_id})
-          this.factura_codigo = response.data
-        } else {
-          this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
-        }
-      })
-      .catch((error) => (console.log(error)))
+    cargarFactura: async function() {
+      try {
+        await axios.post('./ajaxfile.php', {
+          request: 'insertar_factura',
+          persona: this.factura_datos[0].persona_id,
+          ordenes: this.factura_datos.map(orden => orden.id)
+        })
+        .then((response) => {
+          if (response.data) {
+            this.SnackbarShow("success", "Generado Correctamente.")
+            this.mostrar_factura = true
+            this.factura_persona = this.personas.find((item)=>{return item.id == this.factura_datos[0].persona_id})
+            this.factura_codigo = response.data
+          } else {
+            this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
+          }
+        })
+        .catch((error) => (console.log(error)))
+      } catch (error) {console.log(error)}
     },
     },
 
@@ -470,8 +471,7 @@ import Factura from './Factura.vue'
           search: '',
           total_total_modal: 0,
           total_cantidad_modal: 0,
-          ordenes: [],
-          personas: [],
+          ordenes: [],          
           dialog_nuevo: false,
           mostrar_factura: false,
           generar_factura: true,

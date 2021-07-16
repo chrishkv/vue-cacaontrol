@@ -21,7 +21,7 @@
       Reportes
     </v-tab>
     <v-tab-item>
-        <Ordenes/>
+        <Ordenes :personas="personas"/>
     </v-tab-item>
     <v-tab-item>
       <v-card flat>
@@ -53,6 +53,7 @@ import Personas from './Personas.vue';
 import Cuentas from './Cuentas.vue';
 import OtrasCuentas from './OtrasCuentas.vue';
 import Reportes from './Reportes.vue';
+import axios from 'axios'
 
 export default {
   name: 'Principal',
@@ -65,7 +66,24 @@ export default {
     Reportes
   },
 
-  data: () => ({
-  }),
+  mounted() {
+    this.getPersonas()
+  },
+
+  methods: {
+    getPersonas: function() {
+      axios.post('./ajaxfile.php', {
+        request: 'consulta_personas_select',
+       })
+       .then(response => (this.personas = response.data))
+       .catch((error) => (console.log(error)));
+   },
+  },
+
+  data () {
+    return {
+      personas: [],
+    }
+  },
 };
 </script>
