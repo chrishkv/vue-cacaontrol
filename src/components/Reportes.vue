@@ -102,8 +102,9 @@
       </v-row>
     </v-container>
   </v-form>
-  <div ref="tablaHtml">
-    <table v-if="tabla_nombre=='orden' && !persona_id">
+  <v-card max-width="850px">
+  <div ref="tablaHtml" id="tabla_imprimir">
+    <v-simple-table v-if="tabla_nombre=='orden' && !persona_id">
       <thead>
         <tr>
           <th>Fecha</th>
@@ -140,9 +141,9 @@
           <td>{{total_total}}&nbsp;$</td>
         </tr>
       </tbody>
-    </table>
+    </v-simple-table>
     <template v-else-if="tabla_nombre=='orden' && persona_id">
-      <table>
+      <v-simple-table>
         <tr>
           <th>Nombre y Apellido</th>
           <td>{{registros[0].nombre}}</td>
@@ -155,8 +156,8 @@
           <th>Telefono</th>
           <td>{{registros[0].telefono}}</td>
         </tr>
-      </table>
-      <table v-show="check_direccion">
+      </v-simple-table>
+      <v-simple-table v-show="check_direccion">
         <tr>
           <th>hectarea</th>
           <td>{{registros[0].hectarea}}</td>
@@ -169,8 +170,8 @@
           <th>Direccion de parcela</th>
           <td>{{registros[0].parcela}}</td>
         </tr>
-      </table>
-      <table>
+      </v-simple-table>
+      <v-simple-table>
         <thead>
           <tr>
             <th>Fecha</th>
@@ -203,9 +204,9 @@
             <td>{{total_total}}&nbsp;$</td>
           </tr>
         </tbody>
-      </table>
+      </v-simple-table>
     </template>
-    <table v-else>
+    <v-simple-table v-else>
       <thead >
         <tr>
           <th>&nbsp;Nombre y Apellido&nbsp;</th>
@@ -230,8 +231,9 @@
           <td>{{total_latas}}</td>
         </tr>
       </tbody>
-    </table>
+    </v-simple-table>
   </div>
+  </v-card>
   </div>
 </template>
 <style scoped>
@@ -240,10 +242,13 @@
     border-collapse: collapse;
     text-align:center;
     font-size: 15px;
+    padding: 2px;
   }
-  table {
-    margin: 10px;
+
+  #tabla_imprimir {
+    margin: 5px;
   }
+
   .clickeable_icon {
     cursor: pointer;
   }
@@ -253,10 +258,6 @@
       margin-top: 2%;
       margin-right: 5px;
       vertical-align: middle;
-  }
-
-  th, td {
-    padding: 2px;
   }
 </style>
 <script>
