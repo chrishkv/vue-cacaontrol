@@ -21,26 +21,29 @@
       Reportes
     </v-tab>
     <v-tab-item>
-        <Ordenes :personas="personas"/>
+        <Ordenes :personas="persons"/>
     </v-tab-item>
     <v-tab-item>
       <v-card flat>
-        <OtrasCuentas/>
+        <OtrasCuentas :personas="persons"/>
       </v-card>
     </v-tab-item>
     <v-tab-item>
       <v-card flat>
-        <Personas/>
+        <Personas :personas="persons"
+                  @deletePerson="deletePerson"
+                  @agregarPerson="agregarPerson"
+                  @editarPerson="editarPerson"/>
       </v-card>
     </v-tab-item>
     <v-tab-item>
       <v-card flat>
-        <Cuentas/>
+        <Cuentas :personas="persons"/>
       </v-card>
     </v-tab-item>
     <v-tab-item>
       <v-card flat>
-        <Reportes/>
+        <Reportes :personas="persons"/>
       </v-card>
     </v-tab-item>
     </v-tabs>
@@ -71,18 +74,30 @@ export default {
   },
 
   methods: {
-    getPersonas: function() {
+    getPersonas () {
       axios.post('./ajaxfile.php', {
         request: 'consulta_personas_select',
        })
-       .then(response => (this.personas = response.data))
+       .then(response => (this.persons = response.data))
        .catch((error) => (console.log(error)));
+   },
+
+   deletePerson (persona_id) {
+     let indice = this.persons.findIndex(item => item.id === persona_id)
+     this.persons.splice(indice, 1)
+   },
+
+   agregarPerson (Persona) { this.persons.unshift(Persona) },
+
+   editarPerson (Persona) {
+     let indice = this.persons.findIndex(item => item.id === Persona.id)
+     this.persons.splice(indice, 1, Persona)
    },
   },
 
   data () {
     return {
-      personas: [],
+      persons: [],
     }
   },
 };

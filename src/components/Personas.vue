@@ -96,102 +96,23 @@
 </template>
 <script>
 import axios from 'axios'
-import EventBus from '../bus'
   export default {
-    mounted() {
-      this.getPersonas();
-    },
+    props: ['personas'],
 
     methods: {
       addPersona: function () {
         if(this.nombre != '' && this.cedula != '') {
           //indica que va a editar
           if (this.persona_id) {
-            axios.post('./ajaxfile.php', {
-              request: 'editar_persona',
-              persona_id: this.persona_id,
-              nombre: this.nombre,
-              cedula: this.cedula,
-              telefono: this.telefono,
-              mail: this.mail,
-              hectarea: this.hectarea,
-              direccion: this.direccion,
-              parcela: this.parcela
-            })
-            .then((response) => {
-              if (response.data) {
-                this.SnackbarShow("success", "Editado Correctamente."),
-                //Se borra la informacion de las variables
-                this.persona_id = '',
-                this.nombre = '',
-                this.cedula = '',
-                this.telefono = '',
-                this.mail = '',
-                this.hectarea = '',
-                this.direccion = '',
-                this.parcela = '',
-                //luego de editar a la persona vuelve a rehacer la lista desde la BD
-                this.getPersonas()
-              } else {
-                this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
-              }
-            })
-            .catch((error) => (console.log(error)))
+            this.editarPersona()
           } else {
             //indica que va a ingresar una persona nueva
-            axios.post('./ajaxfile.php', {
-              request: 'insertar_persona',
-              nombre: this.nombre,
-              cedula: this.cedula,
-              telefono: this.telefono,
-              mail: this.mail,
-              hectarea: this.hectarea,
-              direccion: this.direccion,
-              parcela: this.parcela
-            })
-            .then((response) => {
-              if (response.data) {
-                this.SnackbarShow("success", "Guardado Correctamente."),
-                //Agrega a la persona en la lista en la primera posición
-                this.personas.unshift({
-                  id: response.data,
-                  nombre: this.nombre,
-                  cedula: this.cedula,
-                  telefono: this.telefono,
-                  mail: this.mail,
-                  hectarea: this.hectarea,
-                  direccion: this.direccion,
-                  parcela: this.parcela
-                }),
-                EventBus.$emit('add-persona', [this.nombre, response.data]),
-                //Se borra la informacion de las variables
-                this.persona_id = '',
-                this.nombre = '',
-                this.cedula = '',
-                this.telefono = '',
-                this.mail = '',
-                this.hectarea = '',
-                this.direccion = '',
-                this.parcela = ''
-            } else {
-              this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
-            }
-          })
-            .catch((error) => (console.log(error)))
+            this.nuevaPersona()
           }
         } else {
           this.SnackbarShow("warning", "Faltan algunos datos por favor revise.")
         }
       },
-
-      getPersonas: function() {
-        axios.post('./ajaxfile.php', {
-          request: 'consulta_personas',
-         })
-         .then(response => (this.personas = response.data))
-         .catch((error) => (console.log(error)
-       ));
-     },
 
      editPersona(persona) {
        this.persona_id = persona.id,
@@ -211,14 +132,79 @@ import EventBus from '../bus'
        })
        .then((response) => {
          if (response.data) {
-           EventBus.$emit('remove-persona', [persona.id])
+           this.$emit('deletePerson', persona.id)
            this.SnackbarShow("success", "Borrado Correctamente.")
-           this.personas = this.personas.filter(item => item.id != persona.id)
          } else {
            this.SnackbarShow("error", "Tiene registros Guardados. No se puede borrar.")
          }
        })
        .catch(error => (console.log(error)))
+     },
+
+     nuevaPersona() {
+       let Persona = {
+         nombre: this.nombre,
+         cedula: this.cedula,
+         telefono: this.telefono,
+         mail: this.mail,
+         hectarea: this.hectarea,
+         direccion: this.direccion,
+         parcela: this.parcela
+       }
+       axios.post('./ajaxfile.php', {
+         request: 'insertar_persona',
+         ...Persona
+       })
+       .then((response) => {
+         if (response.data) {
+           this.SnackbarShow("success", "Guardado Correctamente."),
+           Persona.id = response.data
+           this.$emit('agregarPerson', Persona)
+           this.limpiarPersona()
+       } else {
+         this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
+       }})
+         .catch((error) => (console.log(error)))
+     },
+
+     editarPersona() {
+       let Persona = {
+         id: this.persona_id,
+         persona_id: this.persona_id,
+         nombre: this.nombre,
+         cedula: this.cedula,
+         telefono: this.telefono,
+         mail: this.mail,
+         hectarea: this.hectarea,
+         direccion: this.direccion,
+         parcela: this.parcela
+       }
+       axios.post('./ajaxfile.php', {
+         request: 'editar_persona',
+         ...Persona
+       })
+       .then((response) => {
+         if (response.data) {
+           this.SnackbarShow("success", "Editado Correctamente.")
+           this.$emit('editarPerson', Persona)
+           this.limpiarPersona()
+         } else {
+           this.SnackbarShow("error", "Hubo un Error al guardar, disculpe.")
+         }
+       })
+       .catch((error) => (console.log(error)))
+     },
+
+     limpiarPersona() {
+       //Se borra la informacion de las variables
+       this.persona_id = '',
+       this.nombre = '',
+       this.cedula = '',
+       this.telefono = '',
+       this.mail = '',
+       this.hectarea = '',
+       this.direccion = '',
+       this.parcela = ''
      },
 
      SnackbarShow(tipo, mensaje) {
@@ -266,7 +252,6 @@ import EventBus from '../bus'
           direccion:'',
           parcela:'',
           search: '',
-          personas: [],
           snackbar: {
             color: null,
             text: null,

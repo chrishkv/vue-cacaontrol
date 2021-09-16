@@ -264,27 +264,13 @@
 import axios from 'axios'
 import jsPDF from 'jspdf'
 import moment from 'moment'
-import EventBus from '../bus'
 import Vue from "vue";
 import JsonExcel from "vue-json-excel";
 
 Vue.component("downloadExcel", JsonExcel);
 
   export default {
-    created() {
-        EventBus.$on('add-persona', (item) => {
-            this.personas.unshift({id:item[1], nombre:item[0]})
-        }),
-
-        EventBus.$on('remove-persona', (item) => {
-            this.personas = this.personas.filter(persona => persona.id != item[0])
-        })
-    },
-
-    mounted() {
-      this.getPersonas();
-    },
-
+    props: ['personas'],
     methods: {
       buscarRegistros () {
         if (this.dates.length == 2) {
@@ -395,14 +381,6 @@ Vue.component("downloadExcel", JsonExcel);
       generateExcel: function () {
         this.SnackbarShow("error", "Funcion aún en construcción")
       },
-
-      getPersonas: function() {
-        axios.post('./ajaxfile.php', {
-          request: 'consulta_personas_select',
-         })
-         .then(response => (this.personas = response.data))
-         .catch((error) => (console.log(error)));
-     },
     },
 
     data () {
@@ -412,7 +390,6 @@ Vue.component("downloadExcel", JsonExcel);
         total_quintales:0,
         total_total:0,
         persona_id:"",
-        personas: [],
         sede_id:"",
         dates: [moment(String(new Date())).subtract(30, 'days').format('YYYY-MM-DD'), moment(String(new Date())).format('YYYY-MM-DD')],
         tipo_orden_id:"",

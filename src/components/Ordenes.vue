@@ -169,23 +169,12 @@
 <script>
 import moment from 'moment'
 import axios from 'axios'
-import EventBus from '../bus'
 import Factura from './Factura.vue'
 
   export default {
     props: ['personas'],
     components: {
       Factura
-    },
-
-    created() {
-        EventBus.$on('add-persona', (item) => {
-            this.personas.unshift({id:item[1], nombre:item[0]})
-        }),
-
-        EventBus.$on('remove-persona', (item) => {
-            this.personas = this.personas.filter(persona => persona.id != item[0])
-        })
     },
 
     mounted() {
@@ -471,7 +460,7 @@ import Factura from './Factura.vue'
           search: '',
           total_total_modal: 0,
           total_cantidad_modal: 0,
-          ordenes: [],          
+          ordenes: [],
           dialog_nuevo: false,
           mostrar_factura: false,
           generar_factura: true,

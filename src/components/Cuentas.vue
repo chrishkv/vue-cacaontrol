@@ -105,22 +105,11 @@
 </style>
 <script>
 import axios from 'axios'
-import EventBus from '../bus'
 
   export default {
-    created() {
-        EventBus.$on('add-persona', (item) => {
-            this.personas.unshift({id:item[1], nombre:item[0]})
-        }),
-        
-        EventBus.$on('remove-persona', (item) => {
-            this.personas = this.personas.filter(persona => persona.id != item[0])
-        })
-    },
-
+    props: ['personas'],
     mounted() {
       this.getCuentas();
-      this.getPersonas();
     },
 
     methods: {
@@ -193,16 +182,6 @@ import EventBus from '../bus'
        ));
      },
 
-     getPersonas: function() {
-       axios.post('./ajaxfile.php', {
-         request: 'consulta_personas_select',
-        })
-        .then(response => (this.personas = response.data))
-        .catch((error) => (
-          console.log(error)
-      ));
-    },
-
     deleteCuenta: function (cuenta) {
       axios.post('./ajaxfile.php', {
         request: 'eliminar_cuenta',
@@ -269,7 +248,6 @@ import EventBus from '../bus'
           nombre_banco:'Banco Pichincha',
           search: '',
           cuentas: [],
-          personas: [],
           snackbar: {
             color: null,
             text: null,

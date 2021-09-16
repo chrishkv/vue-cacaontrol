@@ -100,22 +100,11 @@
 <script>
 import moment from 'moment'
 import axios from 'axios'
-import EventBus from '../bus'
 
   export default {
-    created() {
-        EventBus.$on('add-persona', (item) => {
-            this.personas.unshift({id:item[1], nombre:item[0]})
-        }),
-        
-        EventBus.$on('remove-persona', (item) => {
-            this.personas = this.personas.filter(persona => persona.id != item[0])
-        })
-    },
-
+    props: ['personas'],
     mounted() {
       this.getOtrasCuentas();
-      this.getPersonas();
     },
 
     methods: {
@@ -193,16 +182,6 @@ import EventBus from '../bus'
        ));
      },
 
-     getPersonas: function() {
-       axios.post('./ajaxfile.php', {
-         request: 'consulta_personas_select',
-        })
-        .then(response => (this.personas = response.data))
-        .catch((error) => (
-          console.log(error)
-      ));
-    },
-
     deleteOtrasCuenta: function (otrasCuentas) {
       axios.post('./ajaxfile.php', {
         request: 'eliminar_otras_cuenta',
@@ -271,7 +250,6 @@ import EventBus from '../bus'
           observacion:'',
           search:'',
           otrasCuentas:[],
-          personas:[],
           snackbar: {
             color: null,
             text: null,
