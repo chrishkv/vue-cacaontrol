@@ -414,11 +414,13 @@ if($request == 'consultar_registros') {
 
 // insertar en la tabla Factura
 if($request == 'insertar_factura'){
-  $sql = $con->prepare("INSERT INTO factura(persona_id, codigo, fecha) VALUES (:persona_id, 0, :fecha)");
+  $sql = $con->prepare("INSERT INTO factura(persona_id, codigo, fecha) VALUES (:persona_id, :codigo, :fecha)");
   $persona = $data->persona;
   $ordenes_ids = $data->ordenes;
+  $codigo = $data->codigo;
   $fecha = date("Y-m-d", strtotime("now"));
   $sql->bindValue(':persona_id',$persona,PDO::PARAM_INT);
+  $sql->bindValue(':codigo',$codigo,PDO::PARAM_STR);
   $sql->bindValue(':fecha',$fecha,PDO::PARAM_STR);
   $result = $sql->execute();
   //Devuelve el id del ultimo registro ingresado
@@ -434,5 +436,36 @@ if($request == 'insertar_factura'){
     }
   }
 
+  exit;
+}
+
+// Consulta todos los registros de la tabla orden
+if($request == 'consulta_factura'){
+  $sql = $con->prepare("SELECT factura.id as secuencial,
+                        factura.fecha as fecha,
+                        orden.id as orden_id,
+                        orden.precio as precio,
+                        orden.total as total,
+                        orden.tipo as tipo,
+                        orden.humedad as humedad,
+                        persona.id as persona_id,
+                        persona.nombre as nombre
+                        FROM factura
+                        INNER JOIN persona ON (persona.id = factura.persona_id)
+                        INNER JOIN factura_orden ON (factura_orden.factura_id = factura.id)
+                        INNER JOIN orden ON (orden.id = factura_orden.orden_id)
+                        WHERE factura.fecha BETWEEN ? AND ?
+                        order by factura.id desc");
+  $fecha_desde=date('Y-m-d',strtotime('-29 days',strtotime("now")));
+  $fecha_hasta=date("Y-m-d", strtotime("now"));
+  $sql->bindValue(1,$fecha_desde,PDO::PARAM_STR);
+  $sql->bindValue(2,$fecha_hasta,PDO::PARAM_STR);
+  $sql->execute();
+  $response = array();
+  while($row=$sql->fetch(PDO::FETCH_ASSOC)){
+    $response[] = $row;
+  }
+
+  echo json_encode($response);
   exit;
 }

@@ -18,6 +18,9 @@
       Cuentas
     </v-tab>
     <v-tab ripple>
+      Facturas
+    </v-tab>
+    <v-tab ripple>
       Reportes
     </v-tab>
     <v-tab-item>
@@ -43,6 +46,11 @@
     </v-tab-item>
     <v-tab-item>
       <v-card flat>
+        <Facturas :personas="persons"/>
+      </v-card>
+    </v-tab-item>
+    <v-tab-item>
+      <v-card flat>
         <Reportes :personas="persons"/>
       </v-card>
     </v-tab-item>
@@ -56,6 +64,7 @@ import Personas from './Personas.vue';
 import Cuentas from './Cuentas.vue';
 import OtrasCuentas from './OtrasCuentas.vue';
 import Reportes from './Reportes.vue';
+import Facturas from './Facturas.vue';
 import axios from 'axios'
 
 export default {
@@ -66,7 +75,8 @@ export default {
     Personas,
     Cuentas,
     OtrasCuentas,
-    Reportes
+    Reportes,
+    Facturas
   },
 
   mounted() {
