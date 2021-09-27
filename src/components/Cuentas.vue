@@ -17,7 +17,7 @@
   </v-snackbar>
   <v-form>
     <v-container fluid>
-      <v-row justify="center" align="center">
+      <v-row align="start" justify="center">
         <v-col cols="12" sm="2">
           <v-autocomplete
             label="Nombre y Apellido"

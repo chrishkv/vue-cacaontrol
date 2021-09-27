@@ -17,7 +17,7 @@
   </v-snackbar>
   <v-form>
     <v-container fluid>
-      <v-row align="center" justify="center">
+      <v-row align="start" justify="center">
         <v-col cols="12" sm="2">
           <v-autocomplete
             label="Nombre y Apellido"
@@ -44,7 +44,7 @@
           <v-text-field v-model="observacion" filled label="Observacion" :rules="observacionRules" background-color="#AFEEEE" required></v-text-field>
         </v-col>
 
-        <v-col cols="12" sm="1" align="center">
+        <v-col cols="12" sm="1">
           <v-btn v-on:click="addOtrasCuenta" color="primary" dark large>Guardar</v-btn>
         </v-col>
       </v-row>

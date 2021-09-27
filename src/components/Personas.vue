@@ -17,7 +17,7 @@
   </v-snackbar>
   <v-form>
     <v-container fluid>
-      <v-row align="center" justify="center">
+      <v-row align="start" justify="center">
         <v-col cols="12" sm="3">
           <v-text-field v-model="nombre" filled label="Nombre y Apellido" :rules="nameRules" clearable background-color="#AFEEEE" required></v-text-field>
         </v-col>

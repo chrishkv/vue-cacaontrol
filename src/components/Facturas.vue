@@ -4,9 +4,9 @@
       <v-dialog no-click-animation persistent v-model="mostrar_factura" :width="600">
         <Factura
           @cerrarDialogo="closeDialog"
-          :ordenes="factura_datos"
-          :persona="factura_persona"
-          :codigo="factura_codigo"
+          :ordenes="factura.datos"
+          :persona="factura.persona"
+          :codigo="factura.codigo"
         />
       </v-dialog>
     </div>
@@ -27,14 +27,14 @@
   </v-snackbar>
   <v-form>
     <v-container fluid>
-      <v-row align="center" justify="center">
+      <v-row align="start" justify="center">
         <v-col cols="12" sm="2">
           <v-autocomplete
             label="Nombre y Apellido"
             clearable
             dense
             filled
-            v-model="persona_id"
+            v-model="form.persona_id"
             item-value="id"
             item-text="nombre"
             :items="personas"
@@ -43,19 +43,57 @@
         </v-col>
 
         <v-col cols="12" sm="2">
-          <v-select :items="tipo_orden_select" filled label="Tipo de Orden" v-model="tipo_orden_id" item-value="value" background-color="#AFEEEE"></v-select>
+          <v-select :items="tipo_select" filled label="Tipo" v-model="form.tipo_id" item-value="value" background-color="#AFEEEE" clearable></v-select>
         </v-col>
 
         <v-col cols="12" sm="2">
-          <v-text-field v-model="cantidad" filled label="$ Total" :rules="cantidadRules" background-color="#AFEEEE" required></v-text-field>
+          <v-select :items="sede_select" filled label="Sede" v-model="form.sede_id" item-value="value" background-color="#AFEEEE" clearable></v-select>
         </v-col>
 
         <v-col cols="12" sm="4">
-          <v-text-field v-model="observacion" filled label="Observacion" :rules="observacionRules" background-color="#AFEEEE" required></v-text-field>
+          <v-dialog
+          ref="dialog_date"
+          v-model="modal_date"
+          :return-value.sync="form.dates"
+          persistent
+          width="290px"
+        >
+          <template v-slot:activator="{ on, attrs }">
+            <v-text-field
+              v-model="form.dates"
+              label="Fecha de la Factura"
+              prepend-icon="mdi-calendar"
+              readonly
+              v-bind="attrs"
+              v-on="on"
+            ></v-text-field>
+          </template>
+          <v-date-picker
+            v-model="form.dates"
+            range
+            scrollable
+          >
+            <v-spacer></v-spacer>
+            <v-btn
+              text
+              color="primary"
+              @click="modal_date = false"
+            >
+              Cerrar
+            </v-btn>
+            <v-btn
+              text
+              color="primary"
+              @click="$refs.dialog_date.save(form.dates)"
+            >
+              OK
+            </v-btn>
+          </v-date-picker>
+        </v-dialog>
         </v-col>
 
-        <v-col cols="12" sm="1" align="center">
-          <v-btn v-on:click="addOtrasCuenta" color="primary" dark large>Buscar</v-btn>
+        <v-col cols="12" sm="1">
+          <v-btn v-on:click="buscarFacturas" color="primary" dark large>Buscar</v-btn>
         </v-col>
       </v-row>
     </v-container>
@@ -84,8 +122,10 @@
       <template v-slot:item.tipo="{ item }">
         {{ tipo_select[item.tipo].text }}
       </template>
+      <template v-slot:item.sede="{ item }">
+        {{ sede_select[item.sede].text }}
+      </template>
       <template v-slot:item.actions="{ item }">
-        {{ totalCalculado(item) }}
         <v-icon
           small
           class="mr-2"
@@ -93,6 +133,7 @@
         >
           mdi-eye
         </v-icon>
+        {{ totalCalculado(item) }}
       </template>
       <template #footer.page-text="props">
         {{props.pageStart}}-{{props.pageStop}} de ~{{props.itemsLength}}
@@ -108,6 +149,7 @@
 </style>
 <script>
 import axios from 'axios'
+import moment from 'moment'
 import Factura from './Factura.vue'
 
   export default {
@@ -136,9 +178,10 @@ import Factura from './Factura.vue'
      },
 
     cargarFactura: function (factura) {
-        this.factura_persona = this.personas.find((item)=>{return item.id == factura.persona_id})
+        this.factura.persona = this.personas.find((item)=>{return item.id == factura.persona_id})
+        this.factura.codigo = factura.secuencial
         let facturas = this.facturas.filter(item => item.secuencial == factura.secuencial)
-        this.factura_datos = facturas.map(item => {
+        this.factura.datos = facturas.map(item => {
           item.tipo_nombre = this.tipo_select[item.tipo].text
           return item
         })
@@ -147,6 +190,24 @@ import Factura from './Factura.vue'
 
     closeDialog: function() {
       this.mostrar_factura = false
+    },
+
+    buscarFacturas () {
+      if (this.form.dates.length == 2) {
+        axios.post('./ajaxfile.php', {
+          request: 'consultar_facturas',
+          ...this.form
+         })
+         .then(response => {
+           this.facturas = response.data
+           console.log(this.facturas)
+           if (this.facturas.length == 0)
+            this.SnackbarShow("warning", "No hay registros que mostrar.")
+         })
+         .catch((error) => (console.log(error)));
+       } else {
+         this.SnackbarShow("warning", "Debe seleccionar correctamente las fechas.")
+       }
     },
 
     SnackbarShow(tipo, mensaje) {
@@ -185,10 +246,19 @@ import Factura from './Factura.vue'
 
     data () {
       return {
+          form: {
+            dates: [moment(String(new Date())).subtract(30, 'days').format('YYYY-MM-DD'), moment(String(new Date())).format('YYYY-MM-DD')],
+            persona_id: null,
+            tipo_id: null,
+            sede_id: null,
+          },
+          factura: {
+            datos: null,
+            persona: null,
+            codigo: null,
+          },
+          modal_date: false,
           mostrar_factura: false,
-          factura_datos: null,
-          factura_persona: null,
-          factura_codigo: 0,
           search: '',
           facturas: [],
           tipo_select: [
@@ -197,6 +267,12 @@ import Factura from './Factura.vue'
             {text:'Latas Nacional', value:2},
             {text:'Seco Nacional', value:3},
             {text:'Latas Monilla', value:4},
+          ],
+          sede_select: [
+            {text:'Quera', value:0},
+            {text:'Rio Negro', value:1},
+            {text:'Machala', value:2},
+            {text:'Guayaquil', value:3}
           ],
           snackbar: {
             color: null,
@@ -211,7 +287,8 @@ import Factura from './Factura.vue'
               align: 'center',
               value: 'secuencial',
             },
-            { text: 'Persona Nombre', value: 'nombre', sortable: false },
+            { text: 'Persona Nombre', value: 'nombre' },
+            { text: 'Sede', value: 'sede' },
             { text: 'Tipos', value: 'tipo' },
             { text: '$ Total', value: 'total' },
             { text: 'Fecha', value: 'fecha', sortable: false },

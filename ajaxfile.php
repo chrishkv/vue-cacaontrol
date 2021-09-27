@@ -365,16 +365,16 @@ if($request == 'consultar_registros') {
   //Se asignan las condiciones de busqueda
   $tipo_orden_id = $data->tipo_orden_id;
   $persona_id = $data->persona_id;
-  if ($tipo_orden_id !== "") {
+  if ($tipo_orden_id) {
     $query .= " AND tipo_orden_id = :tipo_orden_id";
   }
-  if ($persona_id !== "") {
+  if ($persona_id) {
     $query .= " AND persona.id = :persona_id";
   }
-  if ($sede_id !== "") {
+  if ($sede_id) {
     $query .= " AND orden.sede_id = :sede_id";
   }
-  if ($tipo_id !== "") {
+  if ($tipo_id) {
     $query .= " AND orden.tipo = :tipo_id";
   }
 
@@ -448,6 +448,7 @@ if($request == 'consulta_factura'){
                         orden.total as total,
                         orden.tipo as tipo,
                         orden.humedad as humedad,
+                        orden.sede_id as sede,
                         persona.id as persona_id,
                         persona.nombre as nombre
                         FROM factura
@@ -460,6 +461,57 @@ if($request == 'consulta_factura'){
   $fecha_hasta=date("Y-m-d", strtotime("now"));
   $sql->bindValue(1,$fecha_desde,PDO::PARAM_STR);
   $sql->bindValue(2,$fecha_hasta,PDO::PARAM_STR);
+  $sql->execute();
+  $response = array();
+  while($row=$sql->fetch(PDO::FETCH_ASSOC)){
+    $response[] = $row;
+  }
+
+  echo json_encode($response);
+  exit;
+}
+// Consulta las facturas que soliciten
+if($request == 'consultar_facturas') {
+  $fechas = $data->dates;
+  //se comparan las fechas por que la primera fecha siempre debe ser menos o igual a la segunda fecha
+  if (strtotime($fechas[0]) > strtotime($fechas[1])) {
+    $temporal = $fechas[1];
+    $fechas[1] = $fechas[0];
+    $fechas[0] = $temporal;
+  }
+  $persona_id = $data->persona_id;
+  $sede_id = $data->sede_id;
+  $tipo_id = $data->tipo_id;
+  $condiciones = [];
+  //Se arma el query
+  $query = "";
+  $query .= "SELECT factura.id as secuencial,
+                    factura.fecha as fecha,
+                    orden.id as orden_id,
+                    orden.precio as precio,
+                    orden.total as total,
+                    orden.tipo as tipo,
+                    orden.humedad as humedad,
+                    orden.sede_id as sede,
+                    persona.id as persona_id,
+                    persona.nombre as nombre
+              FROM factura
+              INNER JOIN persona ON (persona.id = factura.persona_id)
+              INNER JOIN factura_orden ON (factura_orden.factura_id = factura.id)
+              INNER JOIN orden ON (orden.id = factura_orden.orden_id)
+              WHERE factura.fecha BETWEEN :fecha_desde AND :fecha_hasta";
+  //Se asignan las condiciones de busqueda
+  if ($persona_id) $query .= " AND persona.id = :persona_id";
+  if ($sede_id) $query .= " AND orden.sede_id = :sede_id";
+  if ($tipo_id) $query .= " AND tipo = :tipo_id";
+  $query .= " ORDER BY factura.id DESC";
+  $sql = $con->prepare($query);
+  //Se asignan los parametros de busqueda
+  $sql->bindValue(':fecha_desde',$fechas[0],PDO::PARAM_STR);
+  $sql->bindValue(':fecha_hasta',$fechas[1],PDO::PARAM_STR);
+  if ($persona_id) $sql->bindValue(':persona_id',$persona_id,PDO::PARAM_INT);
+  if ($sede_id) $sql->bindValue(':sede_id',$sede_id,PDO::PARAM_INT);
+  if ($tipo_id) $sql->bindValue(':tipo_id',$tipo_id,PDO::PARAM_INT);
   $sql->execute();
   $response = array();
   while($row=$sql->fetch(PDO::FETCH_ASSOC)){
