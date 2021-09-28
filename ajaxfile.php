@@ -414,13 +414,11 @@ if($request == 'consultar_registros') {
 
 // insertar en la tabla Factura
 if($request == 'insertar_factura'){
-  $sql = $con->prepare("INSERT INTO factura(persona_id, codigo, fecha) VALUES (:persona_id, :codigo, :fecha)");
+  $sql = $con->prepare("INSERT INTO factura(persona_id, fecha) VALUES (:persona_id, :fecha)");
   $persona = $data->persona;
   $ordenes_ids = $data->ordenes;
-  $codigo = $data->codigo;
   $fecha = date("Y-m-d", strtotime("now"));
-  $sql->bindValue(':persona_id',$persona,PDO::PARAM_INT);
-  $sql->bindValue(':codigo',$codigo,PDO::PARAM_STR);
+  $sql->bindValue(':persona_id',$persona,PDO::PARAM_INT);  
   $sql->bindValue(':fecha',$fecha,PDO::PARAM_STR);
   $result = $sql->execute();
   //Devuelve el id del ultimo registro ingresado
