@@ -4,30 +4,28 @@
       <div ref="facturaHtml">
       <v-card>
         <v-row>
-          <v-col cols="12" sm="4">
-            <v-img
-              max-height="120"
-              max-width="150"
-              src="../../img/cacaontrollogo.png"
-              id="logoFactura"
-            ></v-img>
-            <p>
-              <span class="font-weight-black">FACTURA</span><br>
-              Serie: 001-001 {{ codigo }}<br>
-              Fecha Emisión: {{ fecha }}
-            </p>
+          <v-col cols="12" sm="12">
+            <div style="text-align:center">
+              <p>
+                <span class="font-weight-black">LIQUIDACION DE COMPRA</span><br>
+                Número: {{ codigo }}<br>
+                Fecha Emisión: {{ fecha }}
+              </p>
+            <div>
           </v-col>
-          <v-col cols="12" sm="8">
-            <p id="informacionPropia">
-              <span class="font-weight-black">HUGO PORFIRIO VALDIVIESO ROMERO</span><br>
-              R.U.C.: 0701211369001<br>
-              AGROINDUSTRIAL BLACK RIVER<br>
-              Dir.: Cdla. Bellavista Mz. 65 Solar 29<br>
-              Telf.: 04 2203895 - 0999567592<br>
-              Guayaquil - Ecuador<br>
-              AUT. S.R.I.: 1127144895<br>
-              CONTRIBUYENTE RÉGIMEN MICROEMPRESA
-            </p>
+        </v-row>
+        <v-row>
+          <v-col cols="12" sm="12">
+            <div style="text-align:center">
+              <p id="informacionPropia">
+                <span class="font-weight-black">HUGO PORFIRIO VALDIVIESO ROMERO</span><br>
+                R.U.C.: 0701211369001<br>
+                AGROINDUSTRIAL BLACK RIVER<br>
+                Dir.: Cdla. Bellavista Mz. 65 Solar 29<br>
+                Telf.: 04 2203895 - 0998723827<br>
+                Guayaquil - Ecuador
+              </p>
+            <div>
           </v-col>
         </v-row>
         <v-row>
@@ -95,8 +93,8 @@
     line-height: 21px;
   }
 
-  p, #logoFactura {
-    margin-left: 3px;
+  p, .v-data-table {
+    margin-left: 10px;
   }
 
   .row {
@@ -129,8 +127,8 @@ import jsPDF from 'jspdf'
       },
 
       generatePdf: function () {
-          let nombre_archivo = 'Factura - numero'
-          var doc = new jsPDF('p', 'pt', 'letter')
+          let nombre_archivo = 'Factura-' + this.codigo
+          var doc = new jsPDF('p', 'pt', [1200, 1200])
           doc.html(this.$refs.facturaHtml, {
              callback: function (doc) {
                doc.save(nombre_archivo + '.pdf');

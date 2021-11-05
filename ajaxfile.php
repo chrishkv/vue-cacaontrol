@@ -383,16 +383,16 @@ if($request == 'consultar_registros') {
   //Se asignan los parametros de busqueda
   $sql->bindValue(':fecha_desde',$fechas[0],PDO::PARAM_STR);
   $sql->bindValue(':fecha_hasta',$fechas[1],PDO::PARAM_STR);
-  if ($tipo_orden_id !== "") {
+  if ($tipo_orden_id) {
     $sql->bindValue(':tipo_orden_id',$tipo_orden_id,PDO::PARAM_INT);
   }
-  if ($persona_id !== "") {
+  if ($persona_id) {
     $sql->bindValue(':persona_id',$persona_id,PDO::PARAM_INT);
   }
-  if ($sede_id !== "") {
+  if ($sede_id) {
     $sql->bindValue(':sede_id',$sede_id,PDO::PARAM_INT);
   }
-  if ($tipo_id !== "") {
+  if ($tipo_id) {
     $sql->bindValue(':tipo_id',$tipo_id,PDO::PARAM_INT);
   }
   $sql->execute();

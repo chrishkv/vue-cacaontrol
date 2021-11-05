@@ -266,6 +266,7 @@ import axios from 'axios'
           cedulaRules: [
             v => !!v || 'Cedula es Obligatorio',
             v => v.length == 10 || 'La cedula debe tener 10 digitos',
+            v => !this.personas.find(persona => persona.cedula == v) || 'Esta cedula ya esta registrada',
           ],
           emailRules: [
             v => /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(v) || 'E-mail debe ser valido',
