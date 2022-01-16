@@ -18,7 +18,7 @@
       Cuentas
     </v-tab>
     <v-tab ripple>
-      Facturas
+      Liquidaciones
     </v-tab>
     <v-tab ripple>
       Reportes

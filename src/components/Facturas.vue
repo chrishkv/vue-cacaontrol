@@ -133,7 +133,7 @@
         >
           mdi-eye
         </v-icon>
-        {{ totalCalculado(item) }}
+        {{ totalCalculado(item) }}&nbsp;$
       </template>
       <template #footer.page-text="props">
         {{props.pageStart}}-{{props.pageStop}} de ~{{props.itemsLength}}
