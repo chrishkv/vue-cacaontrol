@@ -1,7 +1,6 @@
 <template>
   <v-container fluid>
     <v-card>
-      <div ref="facturaHtml">
       <v-card>
         <v-row>
           <v-col cols="12" sm="4">
@@ -68,13 +67,7 @@
           </v-simple-table>
           </v-col>
         </v-row>
-      </v-card>
-      </div>
-      <v-divider></v-divider>
-      <v-card-actions>
-        <v-btn color="primary" text @click="cerrarDialogo">Cerrar</v-btn>
-        <v-btn v-on:click="generatePdf" color="primary" medium>Descargar</v-btn>
-      </v-card-actions>
+      </v-card>      
     </v-card>
   </v-container>
 </template>

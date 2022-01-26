@@ -1,13 +1,41 @@
 <template>
   <div>
     <div class="text-center">
+      <v-dialog no-click-animation persistent v-model="mostrar_factura" :width="1200">
+        <div ref="facturaHtmlImprimir" v-show="mostrar_imprimir_factura">
+          <v-card>
+            <v-row>
+              <v-col cols="12" sm="6">
+                <Factura
+                  :ordenes="factura.datos"
+                  :persona="factura.persona"
+                  :codigo="factura.codigo"
+                />
+              </v-col>
+              <v-col cols="12" sm="6">
+                <Factura
+                  :ordenes="factura.datos"
+                  :persona="factura.persona"
+                  :codigo="factura.codigo"
+                />
+              </v-col>
+            <v-row>
+          </v-card>
+        </div>
+      </v-dialog>
       <v-dialog no-click-animation persistent v-model="mostrar_factura" :width="600">
+        <v-card>
         <Factura
-          @cerrarDialogo="closeDialog"
           :ordenes="factura.datos"
           :persona="factura.persona"
           :codigo="factura.codigo"
         />
+        <v-divider></v-divider>
+        <v-card-actions>
+          <v-btn color="primary" text @click="closeDialog">Cerrar</v-btn>
+          <v-btn v-on:click="generatePdf" color="primary" medium>Descargar</v-btn>
+        </v-card-actions>
+        </v-card>
       </v-dialog>
     </div>
   <br>
@@ -150,6 +178,7 @@
 <script>
 import axios from 'axios'
 import moment from 'moment'
+import jsPDF from 'jspdf'
 import Factura from './Factura.vue'
 
   export default {
@@ -242,6 +271,18 @@ import Factura from './Factura.vue'
           break;
       }
     },
+
+    generatePdf: async function () {
+        this.mostrar_imprimir_factura = true
+        const nombre_archivo = 'Factura-' + this.factura.codigo
+        var doc = new jsPDF('p', 'pt', [1200, 1200])
+        await doc.html(this.$refs.facturaHtmlImprimir, {
+           callback: function (doc) {
+             doc.save(nombre_archivo + '.pdf');
+           }
+        })
+        this.mostrar_imprimir_factura = false
+    },
     },
 
     data () {
@@ -259,6 +300,7 @@ import Factura from './Factura.vue'
           },
           modal_date: false,
           mostrar_factura: false,
+          mostrar_imprimir_factura: false,
           search: '',
           facturas: [],
           tipo_select: [
