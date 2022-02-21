@@ -18,15 +18,15 @@
         </v-col>
 
         <v-col cols="12" sm="2">
+          <v-select :items="tipo_select" filled label="Tipo" v-model="tipo" item-value="value"></v-select>
+        </v-col>
+
+        <v-col cols="12" sm="2">
           <v-select :items="tipo_orden_select" filled label="Tipo de Orden" v-model="tipo_orden_id" item-value="value"></v-select>
         </v-col>
 
         <v-col cols="12" sm="2">
           <v-text-field v-model="cantidad" filled type="number" label="Cantidad" :rules="numberRules" required></v-text-field>
-        </v-col>
-
-        <v-col cols="12" sm="2">
-          <v-select :items="tipo_select" filled label="Tipo" v-model="tipo" item-value="value"></v-select>
         </v-col>
 
         <v-col cols="12" sm="2">
@@ -53,7 +53,7 @@
         <v-text-field
           v-model="search"
           append-icon="mdi-magnify"
-          label="Search"
+          label="Buscar"
           single-line
           hide-details
         ></v-text-field>
@@ -83,9 +83,9 @@
   </div>
 </template>
 <style scoped>
-  /*.ma-2 {
-    background-color: #5cbbf6 !important;
-  }*/
+  #app {
+      background-color: #5cbbf6 !important;
+  }
 </style>
 <script>
 import moment from 'moment'
@@ -151,42 +151,12 @@ import EventBus from '../bus'
       },
 
       getOrdenes: function() {
-        axios.post('./ajaxfile.php', {
+        axios.post('ajaxfile.php', {
           request: 'consulta_orden',
          })
          .then(response => (this.ordenes = response.data))
-         .catch( (/*error*/) => (//console.log(error)
-           this.ordenes = [
-             {
-               persona_id: 'Helado',
-               tipo_orden_id: 0,
-               cantidad: 6.0,
-               tipo: 0,
-               precio: 4.0,
-               total: '1',
-               observacion: 'Algo escrito',
-               fecha: '12/28/2021'
-             },
-             {
-               persona_id: 'Ice cream sandwich',
-               tipo_orden_id: 1,
-               cantidad: 9.0,
-               tipo: 1,
-               precio: 4.3,
-               total: '1',
-               observacion: 'Algo escrito',
-               fecha: '12/28/2021'
-             },
-             {
-               persona_id: 'Eclair',
-               tipo_orden_id: 0,
-               cantidad: 16.0,
-               tipo: 2,
-               precio: 6.0,
-               total: '7',
-               observacion: 'Algo escrito',
-               fecha: '12/28/2021'
-             }]
+         .catch( (error) => (
+           console.log(error)
        ));
      },
 

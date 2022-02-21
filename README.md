@@ -1,7 +1,11 @@
+<<<<<<< HEAD
 # vue-cacaontrol
 Control desde vue
 
 # vuetify
+=======
+# Cacaontrol
+>>>>>>> Se agrega ajaxfile.php al git y queda persona en agregar y editar completos
 
 ## Project setup
 ```
